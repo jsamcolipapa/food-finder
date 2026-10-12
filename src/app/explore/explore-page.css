@@ -146,6 +146,11 @@
   gap: 10px;
 }
 
+.pick {
+  padding: 9px 14px;
+  white-space: nowrap;
+}
+
 .quickfilters {
   display: flex;
   gap: 8px;

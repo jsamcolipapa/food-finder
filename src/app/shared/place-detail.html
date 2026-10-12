@@ -9,7 +9,7 @@
     cdkTrapFocusAutoCapture
   >
     <div class="modalhead">
-      <span class="eyebrow">Place details</span>
+      <span class="eyebrow">{{ picked() ? 'Picked for you' : 'Place details' }}</span>
       <button type="button" class="close" aria-label="Close details" (click)="closed.emit()">
         ×
       </button>
@@ -106,6 +106,9 @@
     }
 
     <div class="actions">
+      @if (picked()) {
+        <button type="button" class="btn quiet" (click)="another.emit()">↻ Try another</button>
+      }
       <button type="button" class="btn quiet" [attr.aria-pressed]="saved()" (click)="toggleSaved()">
         {{ saved() ? '♥ Saved' : '♡ Save' }}
       </button>

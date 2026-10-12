@@ -139,3 +139,19 @@ export function rankPlaces(places: Place[], options: RankOptions): RankedPlace[]
   const score = (r: RankedPlace) => r.distanceM * (r.similarToSaved ? SIMILAR_TO_SAVED_FACTOR : 1);
   return ranked.sort((a, b) => score(a) - score(b));
 }
+
+/**
+ * Chooses a place for the user: at random among those known to be open, falling back to
+ * places with unknown hours. Known-closed places are never picked. Returns null when
+ * nothing outside `excludeIds` qualifies.
+ */
+export function pickPlace(
+  results: RankedPlace[],
+  excludeIds: ReadonlySet<string>,
+  random: () => number = Math.random,
+): RankedPlace | null {
+  const candidates = results.filter((r) => !excludeIds.has(r.place.id));
+  const open = candidates.filter((r) => r.status === 'open');
+  const pool = open.length ? open : candidates.filter((r) => r.status === 'unknown');
+  return pool.length ? pool[Math.floor(random() * pool.length)] : null;
+}

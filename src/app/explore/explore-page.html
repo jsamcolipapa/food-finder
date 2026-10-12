@@ -98,6 +98,14 @@
       </small>
     </div>
     <div class="tools">
+      <button
+        type="button"
+        class="btn pick"
+        [disabled]="!store.canPick()"
+        (click)="store.pickForMe()"
+      >
+        ✦ &nbsp;Pick for me
+      </button>
       <div class="toggles" role="group" aria-label="Jump to">
         <button type="button" [class.active]="view() === 'list'" (click)="show('list')">
           ☷ List
@@ -353,6 +361,8 @@
     [place]="selected.place"
     [reason]="selected.reason"
     [inAppDirections]="true"
+    [picked]="store.selectedWasPicked()"
+    (another)="store.pickForMe()"
     (directionsRequested)="route(selected.place)"
     (closed)="store.selectedId.set(null)"
   />

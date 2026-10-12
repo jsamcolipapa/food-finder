@@ -27,6 +27,9 @@ export class PlaceDetail {
   /** When true, “Get directions” asks the host to draw a route instead of linking out. */
   readonly inAppDirections = input(false);
   readonly directionsRequested = output<void>();
+  /** True when the app chose this place for the user; offers “Try another”. */
+  readonly picked = input(false);
+  readonly another = output<void>();
   readonly closed = output<void>();
 
   protected readonly kind = computed(() => describeKind(this.place()));
