@@ -33,6 +33,15 @@
   box-shadow: var(--shadow);
 }
 
+.notice {
+  margin: 0 0 16px;
+  padding: 12px 16px;
+  border: 1px solid #f1cdb9;
+  border-radius: 13px;
+  background: #fbe9df;
+  color: #7a3413;
+}
+
 .searchbox {
   background: #fff;
   border: 1px solid var(--line);

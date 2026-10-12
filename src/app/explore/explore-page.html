@@ -15,6 +15,23 @@
     </button>
   </div>
 
+  @switch (location.state()) {
+    @case ('denied') {
+      <p class="notice" role="alert">
+        <strong>Location is blocked for this site.</strong>
+        Allow it from the icon in your browser's address bar (or the site's settings), then tap “Use
+        my location” again. You can also just move the map and choose “Search here”.
+      </p>
+    }
+    @case ('unavailable') {
+      <p class="notice" role="alert">
+        <strong>We couldn't get your location.</strong>
+        Check that location services are turned on for your device and browser, then try again — or
+        move the map and choose “Search here”.
+      </p>
+    }
+  }
+
   <label class="searchbox">
     <span class="searchicon" aria-hidden="true">⌕</span>
     <input
@@ -104,25 +121,10 @@
         @case ('idle') {
           <div class="state">
             <h3>Find somewhere to eat nearby</h3>
-            @switch (location.state()) {
-              @case ('denied') {
-                <p role="alert">
-                  Location access is blocked for this site. You can still pick a spot on the map, or
-                  allow location in your browser's site settings and try again.
-                </p>
-              }
-              @case ('unavailable') {
-                <p role="alert">
-                  We couldn't get your location. Pick a spot on the map instead, or try again.
-                </p>
-              }
-              @default {
-                <p>
-                  Your location is only used to search around you. It is sent as a search area to
-                  OpenStreetMap's public Overpass service and is never stored or tied to an account.
-                </p>
-              }
-            }
+            <p>
+              Your location is only used to search around you. It is sent as a search area to
+              OpenStreetMap's public Overpass service and is never stored or tied to an account.
+            </p>
             <div class="actions">
               <button
                 type="button"

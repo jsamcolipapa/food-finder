@@ -9,26 +9,44 @@ export class LocationService {
   readonly state = signal<LocationState>('idle');
   readonly position = signal<LatLng | null>(null);
 
-  request(): Promise<LatLng | null> {
+  async request(): Promise<LatLng | null> {
     if (!('geolocation' in navigator)) {
       this.state.set('unavailable');
-      return Promise.resolve(null);
+      return null;
     }
     this.state.set('requesting');
-    return new Promise((resolve) => {
+    try {
+      const position = await this.locate();
+      this.position.set(position);
+      this.state.set('granted');
+      return position;
+    } catch (error) {
+      const denied = (error as GeolocationPositionError).code === 1; // PERMISSION_DENIED
+      this.state.set(denied ? 'denied' : 'unavailable');
+      return null;
+    }
+  }
+
+  /**
+   * Tries a precise fix first, then falls back to a coarse one: laptops and desktops
+   * without GPS often time out or fail when high accuracy is requested.
+   */
+  private async locate(): Promise<LatLng> {
+    try {
+      return await this.getPosition({ enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 });
+    } catch (error) {
+      if ((error as GeolocationPositionError).code === 1) throw error;
+      return this.getPosition({ enableHighAccuracy: false, timeout: 15000, maximumAge: 300000 });
+    }
+  }
+
+  private getPosition(options: PositionOptions): Promise<LatLng> {
+    return new Promise((resolve, reject) =>
       navigator.geolocation.getCurrentPosition(
-        ({ coords }) => {
-          const position = { lat: coords.latitude, lng: coords.longitude };
-          this.position.set(position);
-          this.state.set('granted');
-          resolve(position);
-        },
-        (error) => {
-          this.state.set(error.code === error.PERMISSION_DENIED ? 'denied' : 'unavailable');
-          resolve(null);
-        },
-        { enableHighAccuracy: true, timeout: 15000, maximumAge: 60000 },
-      );
-    });
+        ({ coords }) => resolve({ lat: coords.latitude, lng: coords.longitude }),
+        reject,
+        options,
+      ),
+    );
   }
 }
