@@ -1,0 +1,51 @@
+@let p = place();
+<article class="card" (click)="opened.emit()">
+  <div class="foodimg" [class]="tone()" aria-hidden="true">
+    @if (status() === 'open') {
+      <span class="badge">Open now</span>
+    }
+    {{ emoji() }}
+  </div>
+  <div class="body">
+    <div class="cardtop">
+      <div>
+        <h3>
+          <button type="button" class="open" [class.unnamed]="!p.named">{{ p.name }}</button>
+        </h3>
+        <div class="kind">{{ kind() }}</div>
+      </div>
+      <button
+        type="button"
+        class="heart"
+        [class.on]="saved()"
+        [attr.aria-pressed]="saved()"
+        [attr.aria-label]="(saved() ? 'Remove ' : 'Save ') + p.name"
+        (click)="$event.stopPropagation(); savedToggled.emit()"
+      >
+        {{ saved() ? '♥' : '♡' }}
+      </button>
+    </div>
+    <div class="meta">
+      @switch (status()) {
+        @case ('open') {
+          <span>Open now</span>
+        }
+        @case ('closed') {
+          <span class="closed">Closed now</span>
+        }
+        @default {
+          <span>Hours unknown</span>
+        }
+      }
+      @if (!p.cuisines.length) {
+        <span>· Cuisine not mapped</span>
+      }
+      @if (p.address) {
+        <span class="address">· {{ p.address }}</span>
+      }
+    </div>
+    @if (reason(); as why) {
+      <span class="reason">{{ why }}</span>
+    }
+  </div>
+</article>

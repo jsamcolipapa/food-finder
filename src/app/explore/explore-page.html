@@ -1,0 +1,248 @@
+<div class="main">
+  <div class="headrow">
+    <div>
+      <div class="eyebrow">A good meal is close</div>
+      <h1 class="title">What sounds good?</h1>
+      <p class="sub">Places to eat around you, filtered by what you're craving.</p>
+    </div>
+    <button
+      type="button"
+      class="loc"
+      [disabled]="location.state() === 'requesting'"
+      (click)="store.useMyLocation()"
+    >
+      ⌖ &nbsp; {{ locationLabel() }}
+    </button>
+  </div>
+
+  <label class="searchbox">
+    <span class="searchicon" aria-hidden="true">⌕</span>
+    <input
+      #query
+      type="search"
+      placeholder="Search places or cuisines nearby"
+      aria-label="Search places or cuisines nearby"
+      [value]="store.query()"
+      (input)="store.query.set(query.value)"
+    />
+    <span class="kbd" aria-hidden="true">⌘ K</span>
+  </label>
+
+  <div class="filterhead">
+    <strong>Choose your craving</strong>
+    <small>Pick one or more</small>
+  </div>
+  <app-preference-chips />
+
+  <div class="toolbar">
+    <div>
+      <h2>Nearby for you</h2>
+      <small aria-live="polite">
+        @if (store.loadState() === 'ready') {
+          {{ store.results().length }} {{ store.results().length === 1 ? 'spot' : 'spots' }} within
+        } @else {
+          Search within
+        }
+        <select
+          class="radius"
+          aria-label="Search radius"
+          [value]="prefs.radiusM()"
+          (change)="setRadius(radius.value)"
+          #radius
+        >
+          @for (r of radiusOptions; track r) {
+            <option [value]="r" [selected]="r === prefs.radiusM()">{{ formatDistance(r) }}</option>
+          }
+        </select>
+      </small>
+    </div>
+    <div class="tools">
+      <button
+        type="button"
+        class="pill"
+        [class.active]="prefs.openNowOnly()"
+        [attr.aria-pressed]="prefs.openNowOnly()"
+        (click)="prefs.openNowOnly.set(!prefs.openNowOnly())"
+      >
+        Hide closed
+      </button>
+      <div class="toggles" role="group" aria-label="Jump to">
+        <button type="button" [class.active]="view() === 'list'" (click)="show('list')">
+          ☷ List
+        </button>
+        <button type="button" [class.active]="view() === 'map'" (click)="show('map')">⌖ Map</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="content">
+    <section class="list" #list aria-label="Results">
+      @switch (store.loadState()) {
+        @case ('loading') {
+          <div class="state" role="status">
+            <mat-progress-bar mode="indeterminate" />
+            <p>Looking for places to eat nearby…</p>
+            <p class="hint">
+              The free OpenStreetMap search can take up to half a minute when busy.
+            </p>
+          </div>
+        }
+        @case ('error') {
+          <div class="state" role="alert">
+            <h3>Couldn't load places</h3>
+            @if (store.online()) {
+              <p>
+                The free OpenStreetMap search service is busy or unavailable right now. Wait a
+                moment and try again.
+              </p>
+            } @else {
+              <p>You're offline. Reconnect and try again.</p>
+            }
+            <button type="button" class="btn" (click)="store.search()">Try again</button>
+          </div>
+        }
+        @case ('idle') {
+          <div class="state">
+            <h3>Find somewhere to eat nearby</h3>
+            @switch (location.state()) {
+              @case ('denied') {
+                <p role="alert">
+                  Location access is blocked for this site. You can still pick a spot on the map, or
+                  allow location in your browser's site settings and try again.
+                </p>
+              }
+              @case ('unavailable') {
+                <p role="alert">
+                  We couldn't get your location. Pick a spot on the map instead, or try again.
+                </p>
+              }
+              @default {
+                <p>
+                  Your location is only used to search around you. It is sent as a search area to
+                  OpenStreetMap's public Overpass service and is never stored or tied to an account.
+                </p>
+              }
+            }
+            <div class="actions">
+              <button
+                type="button"
+                class="btn"
+                [disabled]="location.state() === 'requesting'"
+                (click)="store.useMyLocation()"
+              >
+                <mat-icon aria-hidden="true">my_location</mat-icon>
+                {{ location.state() === 'requesting' ? 'Locating…' : 'Use my location' }}
+              </button>
+              <button type="button" class="btn quiet" (click)="store.search()">
+                Search where the map pin is
+              </button>
+            </div>
+            <p class="hint">Move the map to put the pin anywhere you like.</p>
+          </div>
+        }
+        @case ('ready') {
+          @let area = store.searched()!;
+          @for (r of page(); track r.place.id) {
+            <app-place-card
+              [place]="r.place"
+              [status]="r.status"
+              [reason]="r.reason"
+              [saved]="prefs.favoriteIds().has(r.place.id)"
+              (opened)="store.selectedId.set(r.place.id)"
+              (savedToggled)="prefs.toggleFavorite(r.place)"
+            />
+          } @empty {
+            <div class="state">
+              @if (store.places().length) {
+                <h3>No matches for your filters</h3>
+                <p>
+                  {{ store.places().length }} places are mapped within
+                  {{ formatDistance(area.radiusM) }}, but none match. Cuisine isn't always recorded,
+                  so try fewer filters.
+                </p>
+                <button type="button" class="btn quiet" (click)="clearFilters()">
+                  Clear filters
+                </button>
+              } @else {
+                <h3>Nothing mapped here yet</h3>
+                <p>
+                  OpenStreetMap has no restaurants or cafés within
+                  {{ formatDistance(area.radiusM) }} of this spot. Try a wider radius or move the
+                  pin.
+                </p>
+              }
+            </div>
+          }
+          @if (store.results().length > shown()) {
+            <button type="button" class="btn quiet more" (click)="shown.set(shown() + pageSize)">
+              Show more ({{ store.results().length - shown() }} farther away)
+            </button>
+          }
+          @if (store.results().length) {
+            <p class="credit">
+              @if (store.truncated()) {
+                Busy area: only the first {{ maxResults }} mapped places were loaded, so narrow the
+                radius for a complete list.
+              }
+              Listings ©
+              <a
+                href="https://www.openstreetmap.org/copyright"
+                target="_blank"
+                rel="noopener noreferrer"
+                >OpenStreetMap contributors</a
+              >, nearest first. Coverage varies by area; ratings and reviews aren't shown.
+            </p>
+          }
+        }
+      }
+    </section>
+
+    <section class="map" #map aria-label="Map">
+      @defer (on idle) {
+        <app-map-view
+          [(center)]="store.mapCenter"
+          [results]="store.results()"
+          [selectedId]="store.selectedId()"
+          [favoriteIds]="prefs.favoriteIds()"
+          [userLocation]="location.position()"
+          (placeSelected)="store.selectedId.set($event)"
+        />
+      } @placeholder {
+        <p class="maploading">Loading map…</p>
+      }
+      <mat-icon class="centerpin" aria-hidden="true">place</mat-icon>
+      @if (showSearchHere()) {
+        <button type="button" class="expand searchhere" (click)="store.search()">
+          ⌕ &nbsp; {{ store.searched() ? 'Search this area' : 'Search here' }}
+        </button>
+      }
+      <div class="mapfoot">
+        <div class="legend">
+          @if (location.position()) {
+            🔵 Your location &nbsp; · &nbsp;
+          }
+          {{ store.results().length }} nearby places
+          @if (store.results().length > pageSize) {
+            &nbsp; · &nbsp; nearest {{ pageSize }} numbered
+          }
+        </div>
+        <button
+          type="button"
+          class="expand"
+          [disabled]="location.state() === 'requesting'"
+          (click)="store.useMyLocation()"
+        >
+          ⌖ &nbsp; My location
+        </button>
+      </div>
+    </section>
+  </div>
+</div>
+
+@if (store.selected(); as selected) {
+  <app-place-detail
+    [place]="selected.place"
+    [reason]="selected.reason"
+    (closed)="store.selectedId.set(null)"
+  />
+}

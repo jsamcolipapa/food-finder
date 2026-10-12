@@ -1,0 +1,34 @@
+<div class="app">
+  <header class="top">
+    <a class="brand" routerLink="/"><span class="mark" aria-hidden="true">✳</span>crave</a>
+    <nav class="nav" aria-label="Main">
+      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="exact">Discover</a>
+      <a routerLink="/saved" routerLinkActive="active">
+        Favorites
+        @if (prefs.favorites().length; as count) {
+          <span class="count">{{ count }}</span>
+        }
+      </a>
+    </nav>
+  </header>
+
+  @if (!store.online()) {
+    <p class="offline" role="status">
+      <mat-icon aria-hidden="true">cloud_off</mat-icon>
+      You're offline. Favorites still work; searching and the map need a connection.
+    </p>
+  }
+
+  <main>
+    <router-outlet />
+  </main>
+
+  <nav class="mobilebar" aria-label="Main">
+    <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="exact">
+      <mat-icon aria-hidden="true">search</mat-icon>Discover
+    </a>
+    <a routerLink="/saved" routerLinkActive="active">
+      <mat-icon aria-hidden="true">favorite_border</mat-icon>Saved
+    </a>
+  </nav>
+</div>

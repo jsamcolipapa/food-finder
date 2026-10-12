@@ -1,0 +1,43 @@
+<div class="main">
+  <div class="eyebrow">Kept on this device</div>
+  <h1 class="title">Favorites</h1>
+  <p class="sub">Saved in this browser only — they don't sync to other devices.</p>
+
+  <section class="list" aria-label="Favorites">
+    @for (place of prefs.favorites(); track place.id) {
+      <app-place-card
+        [place]="place"
+        [status]="openStatus(place.openingHours)"
+        [saved]="true"
+        (opened)="openId.set(place.id)"
+        (savedToggled)="prefs.toggleFavorite(place)"
+      />
+    } @empty {
+      <div class="state">
+        <p>Nothing saved yet. Tap the heart on a place to keep it here.</p>
+        <a class="btn" routerLink="/">Discover nearby</a>
+      </div>
+    }
+  </section>
+
+  @if (prefs.hidden().length) {
+    <h2>Hidden from results</h2>
+    <ul class="hidden">
+      @for (place of prefs.hidden(); track place.id) {
+        <li>
+          <span>
+            <strong>{{ place.name }}</strong>
+            <small>{{ describeKind(place) }}</small>
+          </span>
+          <button type="button" class="btn quiet" (click)="prefs.unhide(place.id)">
+            Show again
+          </button>
+        </li>
+      }
+    </ul>
+  }
+</div>
+
+@if (open(); as place) {
+  <app-place-detail [place]="place" (closed)="openId.set(null)" />
+}

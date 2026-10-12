@@ -1,0 +1,158 @@
+:host {
+  display: block;
+}
+
+.card {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 12px;
+  display: grid;
+  grid-template-columns: 128px 1fr;
+  gap: 15px;
+  box-shadow: 0 3px 14px #27332108;
+  transition: 0.18s;
+  cursor: pointer;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+
+.foodimg {
+  height: 126px;
+  border-radius: 13px;
+  background: linear-gradient(145deg, #f4d5ad, #d98553);
+  display: grid;
+  place-items: center;
+  font-size: 50px;
+  position: relative;
+}
+
+.foodimg.blue {
+  background: linear-gradient(145deg, #cbded2, #6d9879);
+}
+
+.foodimg.pink {
+  background: linear-gradient(145deg, #f5d8c7, #d88f72);
+}
+
+.badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  background: #fff;
+  padding: 5px 8px;
+  border-radius: 20px;
+  font-weight: 800;
+  color: #395b42;
+}
+
+.body {
+  min-width: 0;
+}
+
+.cardtop {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+h3 {
+  margin: 3px 0 4px;
+  font-size: 17px;
+  letter-spacing: -0.25px;
+}
+
+.open {
+  padding: 0;
+  background: none;
+  color: inherit;
+  font-weight: inherit;
+  letter-spacing: inherit;
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+
+.open.unnamed {
+  font-style: italic;
+  color: var(--muted);
+}
+
+.kind {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.heart {
+  flex: none;
+  background: #f6f7f3;
+  border-radius: 50%;
+  width: 34px;
+  height: 34px;
+  color: #687367;
+  font-size: 17px;
+}
+
+.heart.on {
+  color: #d9593a;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 6px;
+  align-items: center;
+  margin: 9px 0;
+  color: #656e64;
+  font-size: 12px;
+}
+
+.meta .closed {
+  color: #a3361a;
+}
+
+.reason {
+  display: inline-block;
+  background: #eef5e6;
+  color: #426649;
+  border-radius: 7px;
+  font-size: 11px;
+  padding: 5px 8px;
+  font-weight: 700;
+}
+
+@media (max-width: 600px) {
+  .card {
+    grid-template-columns: 95px 1fr;
+    gap: 11px;
+    padding: 9px;
+    border-radius: 15px;
+  }
+
+  .foodimg {
+    height: 111px;
+    font-size: 41px;
+  }
+
+  h3 {
+    font-size: 15px;
+  }
+
+  .meta {
+    font-size: 11px;
+    margin: 7px 0;
+  }
+
+  .meta .address {
+    display: none;
+  }
+
+  .reason {
+    font-size: 10px;
+  }
+}
