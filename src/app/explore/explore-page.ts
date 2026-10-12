@@ -81,6 +81,12 @@ export class ExplorePage {
       (this.store.searched() === null || this.store.pinMoved()),
   );
 
+  /** The line to draw: the part still ahead while following the user, else the whole route. */
+  protected readonly routeCoords = computed(() => {
+    const active = this.store.activeRoute();
+    return active?.ahead ?? active?.route?.coordinates ?? null;
+  });
+
   /** Hand-off link for turn-by-turn navigation along the route being shown. */
   protected readonly navigateUrl = computed(() => {
     const active = this.store.activeRoute();

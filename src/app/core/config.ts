@@ -22,6 +22,17 @@ export const APP_CONFIG = {
     walk: 'https://routing.openstreetmap.de/routed-foot/route/v1/driving',
     drive: 'https://routing.openstreetmap.de/routed-car/route/v1/driving',
   },
+  /** Thresholds for following the user along a route while directions are open. */
+  liveRoute: {
+    /** Farther than this from the path counts as having left it. */
+    offRouteM: 40,
+    /** Consecutive off-path fixes needed before asking for a new route. */
+    offRouteFixes: 2,
+    rerouteCooldownMs: 15000,
+    arriveM: 30,
+    /** Fixes less accurate than this are ignored so a jumpy reading can't re-route. */
+    maxAccuracyM: 100,
+  },
   overpassTimeoutS: 15,
   requestTimeoutMs: 25000,
   /** Overpass returns an arbitrary subset beyond this, so the UI flags truncation. */

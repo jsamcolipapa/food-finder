@@ -10,6 +10,7 @@ import {
   model,
   output,
   signal,
+  untracked,
   viewChild,
 } from '@angular/core';
 import {
@@ -20,8 +21,9 @@ import {
   NavigationControl,
   setWorkerUrl,
 } from 'maplibre-gl';
+import type { Feature } from 'geojson';
 import { APP_CONFIG } from '../core/config';
-import { LatLng, RankedPlace, Route } from '../core/models';
+import { LatLng, RankedPlace } from '../core/models';
 import { MapProvider } from '../core/providers';
 import { mapColors } from '../core/theme';
 
@@ -65,7 +67,11 @@ export class MapView implements OnDestroy {
   readonly favoriteIds = input<ReadonlySet<string>>(new Set());
   readonly userLocation = input<LatLng | null>(null);
   /** Path to draw, with the place it leads to highlighted. */
-  readonly route = input<Route | null>(null);
+  readonly route = input<[number, number][] | null>(null);
+  /** Changes when the route should be framed again: first shown, or recalculated. */
+  readonly routeVersion = input(0);
+  /** While true the user's own dot marks the start, so no separate start dot is drawn. */
+  readonly routeLive = input(false);
   readonly routeDestinationId = input<string | null>(null);
   /** Switches the base map and overlay colours between the light and dark themes. */
   readonly dark = input(false);
@@ -113,22 +119,35 @@ export class MapView implements OnDestroy {
     });
 
     effect(() => {
-      const route = this.route();
+      const coordinates = this.route() ?? [];
+      const live = this.routeLive();
       if (!this.styleVersion() || !this.map) return;
-      const coordinates = route?.coordinates ?? [];
-      this.map.getSource<GeoJSONSource>(ROUTE_SOURCE)?.setData({
-        type: 'FeatureCollection',
-        features: coordinates.length
-          ? [
-              { type: 'Feature', geometry: { type: 'LineString', coordinates }, properties: {} },
-              {
-                type: 'Feature',
-                geometry: { type: 'Point', coordinates: coordinates[0] },
-                properties: { start: true },
-              },
-            ]
-          : [],
-      });
+      const features: Feature[] = [];
+      if (coordinates.length > 1) {
+        features.push({
+          type: 'Feature',
+          geometry: { type: 'LineString', coordinates },
+          properties: {},
+        });
+      }
+      if (coordinates.length && !live) {
+        features.push({
+          type: 'Feature',
+          geometry: { type: 'Point', coordinates: coordinates[0] },
+          properties: { start: true },
+        });
+      }
+      this.map
+        .getSource<GeoJSONSource>(ROUTE_SOURCE)
+        ?.setData({ type: 'FeatureCollection', features });
+    });
+
+    // Frame the route only when it is first shown or recalculated. Re-framing on every
+    // position update would yank the map away from wherever the user had panned.
+    effect(() => {
+      this.routeVersion();
+      if (!this.styleVersion() || !this.map) return;
+      const coordinates = untracked(() => this.route()) ?? [];
       if (coordinates.length) {
         const bounds = coordinates.reduce(
           (b, c) => b.extend(c),
