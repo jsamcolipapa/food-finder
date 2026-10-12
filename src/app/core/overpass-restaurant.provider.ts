@@ -35,8 +35,8 @@ export function normalizeElement(el: OverpassElement): Place | null {
   if (isYes(tags['takeaway'])) features.push('takeaway');
   if (isYes(tags['delivery'])) features.push('delivery');
   if (isYes(tags['outdoor_seating'])) features.push('outdoor');
-  // "limited" access is not step-free, so only an explicit yes counts.
-  if (tags['wheelchair'] === 'yes') features.push('step-free');
+  // "limited" access does not qualify, so only an explicit yes counts.
+  if (tags['wheelchair'] === 'yes') features.push('wheelchair');
 
   return {
     id: `${el.type}/${el.id}`,

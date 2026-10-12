@@ -51,7 +51,7 @@ describe('normalizeElement', () => {
         ?.features;
     expect(
       features({ takeaway: 'yes', delivery: 'only', outdoor_seating: 'yes', wheelchair: 'yes' }),
-    ).toEqual(['takeaway', 'delivery', 'outdoor', 'step-free']);
+    ).toEqual(['takeaway', 'delivery', 'outdoor', 'wheelchair']);
     expect(features({ takeaway: 'no', wheelchair: 'limited' })).toEqual([]);
     expect(features({})).toEqual([]);
   });

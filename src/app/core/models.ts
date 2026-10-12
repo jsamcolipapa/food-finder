@@ -12,13 +12,13 @@ export interface SearchArea {
 export type OpenStatus = 'open' | 'closed' | 'unknown';
 
 /** Practical details contributors sometimes map; absent means unknown, not "no". */
-export type PlaceFeature = 'takeaway' | 'delivery' | 'outdoor' | 'step-free';
+export type PlaceFeature = 'takeaway' | 'delivery' | 'outdoor' | 'wheelchair';
 
 export const FEATURE_LABELS: Record<PlaceFeature, string> = {
   takeaway: 'Takeaway',
   delivery: 'Delivery',
   outdoor: 'Outdoor seating',
-  'step-free': 'Step-free',
+  wheelchair: 'Wheelchair accessible',
 };
 
 /** A normalized, OSM-sourced eatery. Ratings and reviews are deliberately not modelled. */
