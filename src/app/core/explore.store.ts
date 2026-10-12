@@ -63,6 +63,15 @@ export class ExploreStore {
     addEventListener('offline', () => this.online.set(false));
   }
 
+  private autoLocated = false;
+
+  /** Asks for the device location once per visit, as soon as the app opens. */
+  locateOnStart(): void {
+    if (this.autoLocated) return;
+    this.autoLocated = true;
+    void this.useMyLocation();
+  }
+
   async useMyLocation(): Promise<void> {
     const position = await this.location.request();
     if (position) {

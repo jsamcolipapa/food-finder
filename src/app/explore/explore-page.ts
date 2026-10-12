@@ -48,6 +48,7 @@ export class ExplorePage {
   protected readonly pageSize = APP_CONFIG.pageSize;
 
   constructor() {
+    this.store.locateOnStart();
     effect(() => {
       this.store.results();
       this.shown.set(APP_CONFIG.pageSize);
