@@ -40,6 +40,13 @@ only active in production builds.
 - `src/app/saved/` — favorites and places hidden with “Not for me”.
 - `src/app/shared/` — map view, place card, detail dialog, preference chips.
 
+## Location
+
+The app asks for the device location when it opens. If the device can't provide one it reopens the
+last searched spot (stored locally) or, failing that, estimates a city-level position from the
+visitor's IP address using the services in `ipLocationEndpoints` (`config.ts`). The IP lookup is
+skipped when the user has blocked location for the site. Empty that list to disable it.
+
 ## How results are ordered
 
 Selected cravings filter the list; the rest is distance from the search pin, with places that share
