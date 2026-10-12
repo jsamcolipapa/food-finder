@@ -1,4 +1,5 @@
 import { Injectable, signal } from '@angular/core';
+import { APP_CONFIG } from './config';
 import { LatLng } from './models';
 
 export type LocationState = 'idle' | 'requesting' | 'granted' | 'denied' | 'unavailable';
@@ -43,6 +44,28 @@ export class LocationService {
       if ((error as GeolocationPositionError).code === 1) throw error;
       return this.getPosition({ enableHighAccuracy: false, timeout: 15000, maximumAge: 300000 });
     }
+  }
+
+  /**
+   * Rough, city-level position from the visitor's IP address. Sends the request (and
+   * therefore the IP) to a third-party service, so call it only as a fallback.
+   */
+  async approximate(): Promise<LatLng | null> {
+    for (const endpoint of APP_CONFIG.ipLocationEndpoints) {
+      try {
+        const response = await fetch(endpoint, { signal: AbortSignal.timeout(6000) });
+        const json = (await response.json()) as { latitude?: unknown; longitude?: unknown };
+        const lat = Number(json.latitude);
+        const lng = Number(json.longitude);
+        const valid = json.latitude != null && json.longitude != null;
+        if (response.ok && valid && Number.isFinite(lat) && Number.isFinite(lng)) {
+          return { lat, lng };
+        }
+      } catch {
+        // Try the next service.
+      }
+    }
+    return null;
   }
 
   private getPosition(options: PositionOptions): Promise<LatLng> {

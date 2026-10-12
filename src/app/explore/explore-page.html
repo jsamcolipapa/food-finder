@@ -15,32 +15,45 @@
     </button>
   </div>
 
-  @switch (location.state()) {
-    @case ('denied') {
-      <p class="notice" role="alert">
-        <strong>Location is blocked for this site.</strong>
-        Allow it from the icon in your browser's address bar (or the site's settings), then tap “Use
-        my location” again. You can also just move the map and choose “Search here”.
-      </p>
-    }
-    @case ('unavailable') {
-      <div class="notice" role="alert">
-        <strong>Your device didn't give the browser a location.</strong>
-        This is a device or browser setting rather than a site permission:
-        <ul>
-          <li>
-            On a Mac: System Settings → Privacy &amp; Security → Location Services — turn it on, and
-            turn it on for this browser in the list.
-          </li>
-          <li>On Windows: Settings → Privacy &amp; security → Location.</li>
-          <li>Keep Wi-Fi switched on; computers without GPS locate themselves from it.</li>
-        </ul>
-        Then choose “Use my location” again — or move the map and choose “Search here”.
-        @if (location.failure(); as detail) {
-          <small>Browser message: {{ detail }}</small>
+  @if (location.state() === 'denied' || location.state() === 'unavailable') {
+    <div class="notice" role="alert">
+      @switch (store.fallback()) {
+        @case ('last-search') {
+          <strong>Showing the area you last searched.</strong>
+          We couldn't get your current location.
         }
-      </div>
-    }
+        @case ('ip') {
+          <strong>Showing your approximate area.</strong>
+          Your device couldn't provide a location, so this is estimated from your internet
+          connection and may be a few kilometres off.
+        }
+        @default {
+          <strong>We couldn't get your location.</strong>
+        }
+      }
+      Move the map and choose “Search this area” to adjust.
+      <details>
+        <summary>How to get your exact location</summary>
+        @if (location.state() === 'denied') {
+          <p>
+            Location is blocked for this site. Allow it from the icon in your browser's address bar
+            (or the site's settings), then choose “Use my location” again.
+          </p>
+        } @else {
+          <ul>
+            <li>
+              On a Mac: System Settings → Privacy &amp; Security → Location Services — turn it on,
+              and turn it on for this browser in the list.
+            </li>
+            <li>On Windows: Settings → Privacy &amp; security → Location.</li>
+            <li>Keep Wi-Fi switched on; computers without GPS locate themselves from it.</li>
+          </ul>
+          @if (location.failure(); as detail) {
+            <small>Browser message: {{ detail }}</small>
+          }
+        }
+      </details>
+    </div>
   }
 
   <label class="searchbox">
@@ -133,9 +146,10 @@
           <div class="state">
             <h3>Find somewhere to eat nearby</h3>
             <p>
-              We ask for your location when the app opens so we can search around you. It is sent as
-              a search area to OpenStreetMap's public Overpass service and is never stored or tied
-              to an account.
+              We ask for your location when the app opens so we can search around you. The search
+              area is sent to OpenStreetMap's public Overpass service and is never stored or tied to
+              an account. If your device can't provide a location, we reopen your last search or
+              estimate your area from your internet connection.
             </p>
             <div class="actions">
               <button

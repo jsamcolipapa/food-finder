@@ -11,6 +11,11 @@ export const APP_CONFIG = {
     'https://overpass-api.de/api/interpreter',
     'https://overpass.openstreetmap.fr/api/interpreter',
   ],
+  /**
+   * City-level lookups by IP address, used only when the device cannot provide a
+   * location. Each must return JSON with `latitude` and `longitude`.
+   */
+  ipLocationEndpoints: ['https://get.geojs.io/v1/ip/geo.json', 'https://ipwho.is/'],
   overpassTimeoutS: 15,
   requestTimeoutMs: 25000,
   /** Overpass returns an arbitrary subset beyond this, so the UI flags truncation. */
