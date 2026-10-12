@@ -238,9 +238,15 @@
   gap: 8px;
 }
 
-.map {
+.mapcol {
   position: sticky;
   top: 96px;
+  align-self: start;
+  scroll-margin-top: 96px;
+}
+
+.map {
+  position: relative;
   height: calc(100vh - 118px);
   min-height: 510px;
   max-height: 760px;
@@ -271,6 +277,7 @@
 
 .routebar {
   position: absolute;
+  z-index: 2;
   top: 12px;
   left: 12px;
   right: 56px;
@@ -385,12 +392,24 @@
     grid-template-columns: 1fr;
   }
 
-  .map {
+  .mapcol {
     position: relative;
     top: auto;
+    grid-row: 1;
+    scroll-margin-top: 74px;
+  }
+
+  .map {
     height: 350px;
     min-height: 350px;
-    grid-row: 1;
+  }
+
+  /* A short map has no room for an overlay, so the panel sits above it. */
+  .routebar {
+    position: static;
+    max-width: none;
+    margin-bottom: 10px;
+    border: 1px solid var(--line);
   }
 
   .list {

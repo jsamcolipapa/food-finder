@@ -225,21 +225,7 @@
       }
     </section>
 
-    <section class="map" #map aria-label="Map">
-      @defer (on idle) {
-        <app-map-view
-          [(center)]="store.mapCenter"
-          [results]="store.results()"
-          [selectedId]="store.selectedId()"
-          [favoriteIds]="prefs.favoriteIds()"
-          [userLocation]="location.position()"
-          [route]="store.activeRoute()?.route ?? null"
-          [routeDestinationId]="store.activeRoute()?.place?.id ?? null"
-          (placeSelected)="store.selectedId.set($event)"
-        />
-      } @placeholder {
-        <p class="maploading">Loading map…</p>
-      }
+    <div class="mapcol" #map>
       @if (store.activeRoute(); as active) {
         <div class="routebar" role="status">
           <div class="routehead">
@@ -300,34 +286,51 @@
             >
           </div>
         </div>
-      } @else {
-        <mat-icon class="centerpin" aria-hidden="true">place</mat-icon>
-        @if (showSearchHere()) {
-          <button type="button" class="expand searchhere" (click)="store.search()">
-            ⌕ &nbsp; {{ store.searched() ? 'Search this area' : 'Search here' }}
-          </button>
-        }
       }
-      <div class="mapfoot">
-        <div class="legend">
-          @if (location.position()) {
-            🔵 Your location &nbsp; · &nbsp;
+      <section class="map" aria-label="Map">
+        @defer (on idle) {
+          <app-map-view
+            [(center)]="store.mapCenter"
+            [results]="store.results()"
+            [selectedId]="store.selectedId()"
+            [favoriteIds]="prefs.favoriteIds()"
+            [userLocation]="location.position()"
+            [route]="store.activeRoute()?.route ?? null"
+            [routeDestinationId]="store.activeRoute()?.place?.id ?? null"
+            (placeSelected)="store.selectedId.set($event)"
+          />
+        } @placeholder {
+          <p class="maploading">Loading map…</p>
+        }
+        @if (!store.activeRoute()) {
+          <mat-icon class="centerpin" aria-hidden="true">place</mat-icon>
+          @if (showSearchHere()) {
+            <button type="button" class="expand searchhere" (click)="store.search()">
+              ⌕ &nbsp; {{ store.searched() ? 'Search this area' : 'Search here' }}
+            </button>
           }
-          {{ store.results().length }} nearby places
-          @if (store.results().length > pageSize) {
-            &nbsp; · &nbsp; nearest {{ pageSize }} numbered
-          }
+        }
+        <div class="mapfoot">
+          <div class="legend">
+            @if (location.position()) {
+              🔵 Your location &nbsp; · &nbsp;
+            }
+            {{ store.results().length }} nearby places
+            @if (store.results().length > pageSize) {
+              &nbsp; · &nbsp; nearest {{ pageSize }} numbered
+            }
+          </div>
+          <button
+            type="button"
+            class="expand"
+            [disabled]="location.state() === 'requesting'"
+            (click)="store.useMyLocation()"
+          >
+            ⌖ &nbsp; My location
+          </button>
         </div>
-        <button
-          type="button"
-          class="expand"
-          [disabled]="location.state() === 'requesting'"
-          (click)="store.useMyLocation()"
-        >
-          ⌖ &nbsp; My location
-        </button>
-      </div>
-    </section>
+      </section>
+    </div>
   </div>
 </div>
 

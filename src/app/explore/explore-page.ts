@@ -2,6 +2,8 @@ import {
   ChangeDetectionStrategy,
   Component,
   ElementRef,
+  Injector,
+  afterNextRender,
   computed,
   effect,
   inject,
@@ -35,6 +37,7 @@ export class ExplorePage {
   protected readonly prefs = inject(PreferencesService);
   protected readonly location = inject(LocationService);
   private readonly directions = inject(DirectionsProvider);
+  private readonly injector = inject(Injector);
 
   private readonly queryInput = viewChild.required<ElementRef<HTMLInputElement>>('query');
   private readonly listEl = viewChild.required<ElementRef<HTMLElement>>('list');
@@ -82,8 +85,10 @@ export class ExplorePage {
   });
 
   protected route(place: Place, mode: TravelMode = 'walk'): void {
+    const changingMode = this.store.activeRoute()?.place.id === place.id;
     this.store.showRoute(place, mode);
-    this.show('map');
+    // Switching walk/drive happens on the map already, so leave the page where it is.
+    if (!changingMode) this.show('map');
   }
 
   protected duration(seconds: number): string {
@@ -93,11 +98,16 @@ export class ExplorePage {
 
   protected show(view: 'list' | 'map'): void {
     this.view.set(view);
-    const target = view === 'map' ? this.mapEl() : this.listEl();
-    target.nativeElement.scrollIntoView({
-      behavior: 'smooth',
-      block: view === 'map' ? 'center' : 'start',
-    });
+    // Wait for the next render: closing the place dialog hands focus back to its card,
+    // which scrolls the page there and would cancel a scroll started before it.
+    afterNextRender(
+      () => {
+        const target = view === 'map' ? this.mapEl() : this.listEl();
+        // Jump rather than animate: a smooth scroll is dropped if focus moves mid-way.
+        target.nativeElement.scrollIntoView({ block: 'start' });
+      },
+      { injector: this.injector },
+    );
   }
 
   protected setRadius(value: string): void {
