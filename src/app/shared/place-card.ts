@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
-import { OpenStatus, Place } from '../core/models';
+import { FEATURE_LABELS, Place } from '../core/models';
+import { describeHours } from '../core/opening-hours';
 import { describeKind, placeEmoji } from '../core/ranking';
 
 const KIND_LABELS: Record<string, string> = {
@@ -17,12 +18,13 @@ const KIND_LABELS: Record<string, string> = {
 })
 export class PlaceCard {
   readonly place = input.required<Place>();
-  readonly status = input<OpenStatus>('unknown');
   readonly reason = input<string>();
   readonly saved = input(false);
   readonly opened = output<void>();
   readonly savedToggled = output<void>();
 
+  protected readonly hours = computed(() => describeHours(this.place().openingHours));
+  protected readonly features = computed(() => this.place().features.map((f) => FEATURE_LABELS[f]));
   protected readonly emoji = computed(() => placeEmoji(this.place()));
   /** Stable tile colour per place, so cards don't reshuffle colours between searches. */
   protected readonly tone = computed(() => {

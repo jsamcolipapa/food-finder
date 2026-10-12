@@ -12,6 +12,7 @@ function place(id: string, overrides: Partial<Place> = {}): Place {
     kind: 'restaurant',
     cuisines: [],
     vegetarian: false,
+    features: [],
     sourceUrl: `https://www.openstreetmap.org/${id}`,
     ...overrides,
   };
@@ -117,5 +118,22 @@ describe('rankPlaces text search', () => {
     ];
     expect(rankPlaces(places, { ...base, query: ' RAMEN ' }).map((r) => r.place.id)).toEqual(['a']);
     expect(rankPlaces(places, { ...base, query: 'filip' }).map((r) => r.place.id)).toEqual(['b']);
+  });
+});
+
+describe('rankPlaces feature filters', () => {
+  it('keeps only places mapped with every selected feature', () => {
+    const places = [
+      place('both', { features: ['takeaway', 'delivery'] }),
+      place('one', { features: ['takeaway'] }),
+      place('none'),
+    ];
+    const ids = (features: ('takeaway' | 'delivery')[]) =>
+      rankPlaces(places, { ...base, features })
+        .map((r) => r.place.id)
+        .sort();
+    expect(ids(['takeaway'])).toEqual(['both', 'one']);
+    expect(ids(['takeaway', 'delivery'])).toEqual(['both']);
+    expect(ids([])).toEqual(['both', 'none', 'one']);
   });
 });

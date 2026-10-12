@@ -1,5 +1,5 @@
 import { distanceM, formatDistance } from './geo';
-import { LatLng, Place, Preference, RankedPlace } from './models';
+import { LatLng, Place, PlaceFeature, Preference, RankedPlace } from './models';
 import { openStatus } from './opening-hours';
 
 /** How much closer a place is treated when it resembles something the user saved. */
@@ -11,6 +11,8 @@ export interface RankOptions {
   favorites: Place[];
   hiddenIds: ReadonlySet<string>;
   openNowOnly: boolean;
+  /** Only places mapped with every one of these features are kept. */
+  features?: PlaceFeature[];
   /** Free-text search over name, cuisine and type. */
   query?: string;
   now?: Date;
@@ -107,6 +109,7 @@ export function rankPlaces(places: Place[], options: RankOptions): RankedPlace[]
   for (const place of places) {
     if (hiddenIds.has(place.id)) continue;
     if (query && !searchText(place).includes(query)) continue;
+    if (options.features?.some((f) => !place.features.includes(f))) continue;
 
     const matches = selected.filter((p) => matchesPreference(place, p)).map((p) => p.label);
     if (selected.length && !matches.length) continue;

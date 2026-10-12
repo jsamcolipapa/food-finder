@@ -7,7 +7,6 @@
     @for (place of prefs.favorites(); track place.id) {
       <app-place-card
         [place]="place"
-        [status]="openStatus(place.openingHours)"
         [saved]="true"
         (opened)="openId.set(place.id)"
         (savedToggled)="prefs.toggleFavorite(place)"

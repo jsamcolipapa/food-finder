@@ -78,6 +78,10 @@ dd .open {
   color: var(--fresh);
 }
 
+dd .soon {
+  color: var(--notice-ink);
+}
+
 dd .closed {
   color: var(--ink);
 }

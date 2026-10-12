@@ -119,7 +119,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin: 28px 0 14px;
+  margin: 28px 0 10px;
 }
 
 .toolbar h2 {
@@ -146,7 +146,16 @@
   gap: 10px;
 }
 
+.quickfilters {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  margin: 0 0 14px;
+  padding: 1px 0 4px;
+}
+
 .pill {
+  flex: none;
   border: 1px solid var(--line);
   border-radius: 100px;
   padding: 8px 14px;

@@ -11,6 +11,16 @@ export interface SearchArea {
 
 export type OpenStatus = 'open' | 'closed' | 'unknown';
 
+/** Practical details contributors sometimes map; absent means unknown, not "no". */
+export type PlaceFeature = 'takeaway' | 'delivery' | 'outdoor' | 'step-free';
+
+export const FEATURE_LABELS: Record<PlaceFeature, string> = {
+  takeaway: 'Takeaway',
+  delivery: 'Delivery',
+  outdoor: 'Outdoor seating',
+  'step-free': 'Step-free',
+};
+
 /** A normalized, OSM-sourced eatery. Ratings and reviews are deliberately not modelled. */
 export interface Place {
   /** OSM element reference, e.g. `node/123`. */
@@ -24,6 +34,7 @@ export interface Place {
   /** Lower-cased `cuisine` values; empty when contributors did not map any. */
   cuisines: string[];
   vegetarian: boolean;
+  features: PlaceFeature[];
   openingHours?: string;
   address?: string;
   phone?: string;

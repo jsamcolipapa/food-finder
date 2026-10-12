@@ -25,22 +25,24 @@
       <div>
         <dt>Hours</dt>
         <dd>
-          @switch (status()) {
-            @case ('open') {
-              <strong class="open">Open now</strong>
-            }
-            @case ('closed') {
-              <strong class="closed">Closed now</strong>
-            }
-            @default {
-              <strong>{{ p.openingHours ? 'Check hours' : 'Not mapped' }}</strong>
-            }
+          @if (hours().status === 'unknown') {
+            <strong>{{ p.openingHours ? 'Check hours' : 'Not mapped' }}</strong>
+          } @else {
+            <strong [class]="hours().closingSoon ? 'soon' : hours().status">{{
+              hours().label
+            }}</strong>
           }
           @if (p.openingHours) {
             · {{ p.openingHours }}
           }
         </dd>
       </div>
+      @if (features().length) {
+        <div>
+          <dt>Good for</dt>
+          <dd>{{ features().join(' · ') }}</dd>
+        </div>
+      }
       @if (p.address) {
         <div>
           <dt>Address</dt>

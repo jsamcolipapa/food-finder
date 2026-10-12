@@ -1,6 +1,6 @@
 import { Injectable, computed, effect, inject, signal } from '@angular/core';
 import { APP_CONFIG } from './config';
-import { Place, Preference } from './models';
+import { Place, PlaceFeature, Preference } from './models';
 import { StorageService } from './storage.service';
 
 const BUILT_IN: Preference[] = [
@@ -21,10 +21,11 @@ export class PreferencesService {
 
   readonly custom = signal<Preference[]>(this.storage.read('customPreferences', []));
   readonly selectedIds = signal<string[]>(this.storage.read('selectedPreferences', []));
-  readonly favorites = signal<Place[]>(this.storage.read('favorites', []));
-  readonly hidden = signal<Place[]>(this.storage.read('hidden', []));
+  readonly favorites = signal<Place[]>(this.readPlaces('favorites'));
+  readonly hidden = signal<Place[]>(this.readPlaces('hidden'));
   readonly radiusM = signal<number>(this.storage.read('radiusM', APP_CONFIG.defaultRadiusM));
   readonly openNowOnly = signal<boolean>(this.storage.read('openNowOnly', false));
+  readonly featureFilters = signal<PlaceFeature[]>(this.storage.read('featureFilters', []));
 
   readonly all = computed(() => [...BUILT_IN, ...this.custom()]);
   readonly selected = computed(() => this.all().filter((p) => this.selectedIds().includes(p.id)));
@@ -38,6 +39,18 @@ export class PreferencesService {
     effect(() => this.storage.write('hidden', this.hidden()));
     effect(() => this.storage.write('radiusM', this.radiusM()));
     effect(() => this.storage.write('openNowOnly', this.openNowOnly()));
+    effect(() => this.storage.write('featureFilters', this.featureFilters()));
+  }
+
+  /** Places stored by older versions lack fields added since; fill in their defaults. */
+  private readPlaces(key: string): Place[] {
+    return this.storage.read<Place[]>(key, []).map((p) => ({ ...p, features: p.features ?? [] }));
+  }
+
+  toggleFeature(feature: PlaceFeature): void {
+    this.featureFilters.update((list) =>
+      list.includes(feature) ? list.filter((f) => f !== feature) : [...list, feature],
+    );
   }
 
   toggleSelected(id: string): void {

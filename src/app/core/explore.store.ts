@@ -57,6 +57,7 @@ export class ExploreStore {
       favorites: this.prefs.favorites(),
       hiddenIds: this.prefs.hiddenIds(),
       openNowOnly: this.prefs.openNowOnly(),
+      features: this.prefs.featureFilters(),
       query: this.query(),
     });
   });

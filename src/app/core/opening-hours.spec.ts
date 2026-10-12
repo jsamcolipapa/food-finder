@@ -1,4 +1,4 @@
-import { openStatus } from './opening-hours';
+import { describeHours, openStatus } from './opening-hours';
 
 // 2026-10-12 is a Monday.
 const at = (day: number, time: string) => new Date(`2026-10-${day}T${time}:00`);
@@ -51,5 +51,44 @@ describe('openStatus', () => {
     expect(openStatus('sunrise-sunset', at(12, '12:00'))).toBe('unknown');
     expect(openStatus('Dec 25 off; Mo-Fr 09:00-17:00', at(12, '12:00'))).toBe('unknown');
     expect(openStatus('Mo-Fr 09:00-17:00 "by appointment"', at(12, '12:00'))).toBe('unknown');
+  });
+});
+
+describe('describeHours', () => {
+  const label = (hours: string | undefined, when: Date) => describeHours(hours, when).label;
+
+  it('says when an open place closes', () => {
+    expect(label('Mo-Fr 09:00-22:00', at(12, '12:00'))).toBe('Open · closes 10 PM');
+    expect(label('Mo-Fr 09:00-21:30', at(12, '12:00'))).toBe('Open · closes 9:30 PM');
+    expect(label('Mo-Su 10:00-24:00', at(12, '12:00'))).toBe('Open · closes midnight');
+  });
+
+  it('counts down when closing soon', () => {
+    const info = describeHours('Mo-Fr 09:00-17:00', at(12, '16:30'));
+    expect(info).toEqual({ status: 'open', label: 'Closes in 30 min', closingSoon: true });
+  });
+
+  it('follows past-midnight hours into the next day', () => {
+    expect(label('Fr-Sa 18:00-02:00', at(16, '20:00'))).toBe('Open · closes 2 AM');
+    expect(label('Fr-Sa 18:00-02:00', at(17, '01:00'))).toBe('Open · closes 2 AM');
+  });
+
+  it('says when a closed place next opens', () => {
+    expect(label('Mo-Fr 09:00-17:00', at(12, '07:00'))).toBe('Closed · opens 9 AM');
+    expect(label('Mo-Fr 09:00-17:00', at(12, '08:40'))).toBe('Opens in 20 min');
+    expect(label('Mo-Fr 09:00-17:00', at(12, '18:00'))).toBe('Closed · opens Tue 9 AM');
+    expect(label('Mo-Fr 09:00-17:00', at(16, '18:00'))).toBe('Closed · opens Mon 9 AM');
+    expect(label('Mo 11:00-14:00,17:00-21:00', at(12, '15:00'))).toBe('Closed · opens 5 PM');
+  });
+
+  it('recognises round-the-clock hours however they are written', () => {
+    expect(label('24/7', at(12, '03:00'))).toBe('Open 24 hours');
+    expect(label('Mo-Su 00:00-24:00', at(12, '03:00'))).toBe('Open 24 hours');
+  });
+
+  it('reports unknown rather than guessing', () => {
+    expect(describeHours(undefined).status).toBe('unknown');
+    expect(label('sunrise-sunset', at(12, '12:00'))).toBe('Hours unknown');
+    expect(label('Mo off', at(12, '12:00'))).toBe('Closed');
   });
 });

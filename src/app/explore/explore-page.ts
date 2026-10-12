@@ -16,7 +16,7 @@ import { APP_CONFIG } from '../core/config';
 import { ExploreStore } from '../core/explore.store';
 import { formatDistance } from '../core/geo';
 import { LocationService } from '../core/location.service';
-import { Place, TravelMode } from '../core/models';
+import { FEATURE_LABELS, Place, PlaceFeature, TravelMode } from '../core/models';
 import { PreferencesService } from '../core/preferences.service';
 import { DirectionsProvider } from '../core/providers';
 import { MapView } from '../shared/map-view';
@@ -47,6 +47,7 @@ export class ExplorePage {
   protected readonly radiusOptions = APP_CONFIG.radiusOptionsM;
   protected readonly maxResults = APP_CONFIG.maxResults;
   protected readonly formatDistance = formatDistance;
+  protected readonly featureOptions = Object.entries(FEATURE_LABELS) as [PlaceFeature, string][];
 
   /** How many cards are rendered; grows with “Show more” and resets when results change. */
   protected readonly shown = signal(APP_CONFIG.pageSize);
@@ -119,6 +120,7 @@ export class ExplorePage {
   protected clearFilters(): void {
     this.prefs.selectedIds.set([]);
     this.prefs.openNowOnly.set(false);
+    this.prefs.featureFilters.set([]);
     this.store.query.set('');
   }
 

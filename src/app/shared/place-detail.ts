@@ -2,8 +2,8 @@ import { ChangeDetectionStrategy, Component, computed, inject, input, output } f
 import { A11yModule } from '@angular/cdk/a11y';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { Place } from '../core/models';
-import { openStatus } from '../core/opening-hours';
+import { FEATURE_LABELS, Place } from '../core/models';
+import { describeHours } from '../core/opening-hours';
 import { PreferencesService } from '../core/preferences.service';
 import { DirectionsProvider } from '../core/providers';
 import { describeKind } from '../core/ranking';
@@ -30,7 +30,8 @@ export class PlaceDetail {
   readonly closed = output<void>();
 
   protected readonly kind = computed(() => describeKind(this.place()));
-  protected readonly status = computed(() => openStatus(this.place().openingHours));
+  protected readonly hours = computed(() => describeHours(this.place().openingHours));
+  protected readonly features = computed(() => this.place().features.map((f) => FEATURE_LABELS[f]));
   protected readonly saved = computed(() => this.prefs.favoriteIds().has(this.place().id));
   protected readonly hidden = computed(() => this.prefs.hiddenIds().has(this.place().id));
   protected readonly links = computed(() => this.directions.createLinks(this.place()));
