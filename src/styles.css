@@ -1,14 +1,16 @@
 /* Brand tokens and shared pieces of the "crave" design. */
 :root {
   /* Palette. The map can't read CSS variables, so its few colours are mirrored in
-     src/app/core/theme.ts — change both together. */
+     src/app/core/theme.ts — change both together. Dark values are in the next block. */
+  color-scheme: light;
   --paper: #fff8ef;
-  --white: #fff;
+  --surface: #fff;
   --ink: #2a211c;
   --muted: #6b5b50;
   --line: #f0e2d2;
   --quiet: #f4eadf;
   --primary: #d03e1a;
+  --on-primary: #fff;
   --primary-strong: #b93414;
   --primary-soft: #ffe3d6;
   --on-primary-soft: #8f2a10;
@@ -16,10 +18,51 @@
   --fresh-soft: #e3f3e8;
   --on-fresh-soft: #1f5f3a;
   --highlight: #ffc94d;
+  --on-highlight: #2a211c;
   --notice-bg: #fff3d6;
   --notice-ink: #6b4a00;
   --notice-line: #f0d48a;
+  --map-bg: #efe6d8;
+  --backdrop: #2a211c66;
+  --tile-a: linear-gradient(145deg, #ffe8d9, #f6b596);
+  --tile-b: linear-gradient(145deg, #fff0cf, #f3c56b);
+  --tile-c: linear-gradient(145deg, #fde0e0, #ee9f93);
+  --shadow-sm: 0 2px 5px #0001;
+  --shadow-card: 0 3px 14px #3a241408;
   --shadow: 0 12px 35px #3a241412;
+  --shadow-float: 0 5px 15px #3a241424;
+  --shadow-modal: 0 20px 70px #0003;
+}
+
+/* Set on <html> by ThemeService (and by the inline script in index.html before first
+   paint), which resolves "auto" to the device setting. */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --paper: #1c1512;
+  --surface: #2a211c;
+  --ink: #f6ece4;
+  --muted: #c4b3a6;
+  --line: #44362e;
+  --quiet: #3a2e27;
+  --primary-strong: #ff9a7a;
+  --primary-soft: #4a261b;
+  --on-primary-soft: #ffc9b5;
+  --fresh: #6fcf97;
+  --fresh-soft: #1f3d2b;
+  --on-fresh-soft: #a8e6c0;
+  --notice-bg: #3d3115;
+  --notice-ink: #ffdf9e;
+  --notice-line: #6b5524;
+  --map-bg: #2b2623;
+  --backdrop: #000000a6;
+  --tile-a: linear-gradient(145deg, #6a3a29, #a3553a);
+  --tile-b: linear-gradient(145deg, #5e4a22, #a07a2c);
+  --tile-c: linear-gradient(145deg, #5c2f33, #9a4c47);
+  --shadow-sm: 0 2px 5px #0006;
+  --shadow-card: 0 3px 14px #0000004d;
+  --shadow: 0 12px 35px #00000059;
+  --shadow-float: 0 5px 15px #00000073;
+  --shadow-modal: 0 20px 70px #000000a6;
 }
 
 *,
@@ -75,7 +118,7 @@ a {
   padding: 12px 16px;
   border-radius: 12px;
   background: var(--primary);
-  color: var(--white);
+  color: var(--on-primary);
   font-weight: 800;
   text-decoration: none;
 }
@@ -101,7 +144,7 @@ a {
   height: 17px;
   border-radius: 50%;
   background: #528ddd;
-  border: 4px solid var(--white);
+  border: 4px solid #fff;
   box-shadow: 0 0 0 9px #528ddd35;
 }
 

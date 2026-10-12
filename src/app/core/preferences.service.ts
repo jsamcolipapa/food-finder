@@ -12,6 +12,8 @@ const BUILT_IN: Preference[] = [
   { id: 'vegetarian', label: 'Vegetarian', keywords: ['vegetarian', 'vegan'], custom: false },
 ];
 
+export type ThemeChoice = 'auto' | 'light' | 'dark';
+
 export const MAX_CUSTOM_LABEL_LENGTH = 30;
 const MAX_RECENT = 20;
 
@@ -29,6 +31,7 @@ export class PreferencesService {
   readonly recent = signal<Place[]>(this.readPlaces('recent'));
   readonly radiusM = signal<number>(this.storage.read('radiusM', APP_CONFIG.defaultRadiusM));
   readonly openNowOnly = signal<boolean>(this.storage.read('openNowOnly', false));
+  readonly theme = signal<ThemeChoice>(this.storage.read('theme', 'auto'));
   readonly featureFilters = signal<PlaceFeature[]>(this.storage.read('featureFilters', []));
 
   readonly all = computed(() => [...BUILT_IN, ...this.custom()]);
@@ -47,6 +50,7 @@ export class PreferencesService {
     effect(() => this.storage.write('radiusM', this.radiusM()));
     effect(() => this.storage.write('openNowOnly', this.openNowOnly()));
     effect(() => this.storage.write('featureFilters', this.featureFilters()));
+    effect(() => this.storage.write('theme', this.theme()));
   }
 
   /** Places stored by older versions lack fields added since; fill in their defaults. */

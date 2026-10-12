@@ -317,6 +317,7 @@
             [selectedId]="store.selectedId()"
             [favoriteIds]="prefs.favoriteIds()"
             [userLocation]="location.position()"
+            [dark]="theme.dark()"
             [route]="store.activeRoute()?.route ?? null"
             [routeDestinationId]="store.activeRoute()?.place?.id ?? null"
             (placeSelected)="store.selectedId.set($event)"

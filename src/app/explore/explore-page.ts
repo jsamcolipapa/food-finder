@@ -16,6 +16,7 @@ import { APP_CONFIG } from '../core/config';
 import { ExploreStore } from '../core/explore.store';
 import { formatDistance } from '../core/geo';
 import { LocationService } from '../core/location.service';
+import { ThemeService } from '../core/theme.service';
 import { FEATURE_LABELS, Place, PlaceFeature, TravelMode } from '../core/models';
 import { PreferencesService } from '../core/preferences.service';
 import { DirectionsProvider } from '../core/providers';
@@ -36,6 +37,7 @@ export class ExplorePage {
   protected readonly store = inject(ExploreStore);
   protected readonly prefs = inject(PreferencesService);
   protected readonly location = inject(LocationService);
+  protected readonly theme = inject(ThemeService);
   private readonly directions = inject(DirectionsProvider);
   private readonly injector = inject(Injector);
 

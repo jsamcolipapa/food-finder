@@ -1,15 +1,26 @@
 <div class="app">
   <header class="top">
     <a class="brand" routerLink="/"><span class="mark" aria-hidden="true">✳</span>crave</a>
-    <nav class="nav" aria-label="Main">
-      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="exact">Discover</a>
-      <a routerLink="/saved" routerLinkActive="active">
-        Saved
-        @if (prefs.favorites().length; as count) {
-          <span class="count">{{ count }}</span>
-        }
-      </a>
-    </nav>
+    <div class="bar-end">
+      <nav class="nav" aria-label="Main">
+        <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="exact">Discover</a>
+        <a routerLink="/saved" routerLinkActive="active">
+          Saved
+          @if (prefs.favorites().length; as count) {
+            <span class="count">{{ count }}</span>
+          }
+        </a>
+      </nav>
+      <button
+        type="button"
+        class="themebtn"
+        [attr.aria-label]="'Theme: ' + themeNames[theme.choice()] + '. Change theme'"
+        [title]="'Theme: ' + themeNames[theme.choice()]"
+        (click)="theme.cycle()"
+      >
+        <mat-icon aria-hidden="true">{{ themeIcons[theme.choice()] }}</mat-icon>
+      </button>
+    </div>
   </header>
 
   @if (!store.online()) {

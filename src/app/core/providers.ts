@@ -7,7 +7,7 @@ export abstract class RestaurantProvider {
 
 /** Owns the map style/tile configuration and the attribution that must stay visible. */
 export abstract class MapProvider {
-  abstract readonly styleUrl: string;
+  abstract styleUrl(dark: boolean): string;
   abstract readonly attribution: { label: string; url: string }[];
 }
 
