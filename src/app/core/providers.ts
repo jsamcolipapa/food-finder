@@ -1,4 +1,4 @@
-import { LatLng, Place, SearchArea } from './models';
+import { LatLng, Place, Route, SearchArea, TravelMode } from './models';
 
 /** Source of nearby eateries. Swap the implementation to change data provider. */
 export abstract class RestaurantProvider {
@@ -19,4 +19,14 @@ export interface DirectionsLink {
 /** Builds hand-off links to external navigation apps; no in-app routing. */
 export abstract class DirectionsProvider {
   abstract createLinks(place: Place, origin?: LatLng): DirectionsLink[];
+}
+
+/** Computes a path to draw on the map. Not turn-by-turn navigation. */
+export abstract class RouteProvider {
+  abstract route(
+    origin: LatLng,
+    destination: LatLng,
+    mode: TravelMode,
+    signal?: AbortSignal,
+  ): Promise<Route>;
 }

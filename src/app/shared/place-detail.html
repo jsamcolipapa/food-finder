@@ -75,18 +75,33 @@
       }
     </div>
 
-    <a class="btn go" [href]="primaryLink().url" target="_blank" rel="noopener noreferrer">
-      ↗ &nbsp; Get directions
-    </a>
-    <p class="alt">
-      or open in
-      @for (link of otherLinks(); track link.label; let last = $last) {
-        <a [href]="link.url" target="_blank" rel="noopener noreferrer">{{ link.label }}</a>
-        @if (!last) {
-          ·
+    @if (inAppDirections()) {
+      <button type="button" class="btn go" (click)="directionsRequested.emit()">
+        ↗ &nbsp; Get directions
+      </button>
+      <p class="alt">
+        or open in
+        @for (link of links(); track link.label; let last = $last) {
+          <a [href]="link.url" target="_blank" rel="noopener noreferrer">{{ link.label }}</a>
+          @if (!last) {
+            ·
+          }
         }
-      }
-    </p>
+      </p>
+    } @else {
+      <a class="btn go" [href]="primaryLink().url" target="_blank" rel="noopener noreferrer">
+        ↗ &nbsp; Get directions
+      </a>
+      <p class="alt">
+        or open in
+        @for (link of otherLinks(); track link.label; let last = $last) {
+          <a [href]="link.url" target="_blank" rel="noopener noreferrer">{{ link.label }}</a>
+          @if (!last) {
+            ·
+          }
+        }
+      </p>
+    }
 
     <div class="actions">
       <button type="button" class="btn quiet" [attr.aria-pressed]="saved()" (click)="toggleSaved()">

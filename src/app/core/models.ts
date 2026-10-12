@@ -50,3 +50,13 @@ export interface RankedPlace {
   /** Human-readable explanation of why the place is listed where it is. */
   reason: string;
 }
+
+export type TravelMode = 'walk' | 'drive';
+
+/** A path between two points, for drawing on the map. */
+export interface Route {
+  /** `[lng, lat]` pairs along the path, in GeoJSON order. */
+  coordinates: [number, number][];
+  distanceM: number;
+  durationS: number;
+}

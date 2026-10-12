@@ -6,7 +6,13 @@ import { provideServiceWorker } from '@angular/service-worker';
 import { ExternalDirectionsProvider } from './core/external-directions.provider';
 import { OpenFreeMapProvider } from './core/openfreemap.provider';
 import { OverpassRestaurantProvider } from './core/overpass-restaurant.provider';
-import { DirectionsProvider, MapProvider, RestaurantProvider } from './core/providers';
+import { OsrmRouteProvider } from './core/osrm-route.provider';
+import {
+  DirectionsProvider,
+  MapProvider,
+  RestaurantProvider,
+  RouteProvider,
+} from './core/providers';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -20,5 +26,6 @@ export const appConfig: ApplicationConfig = {
     { provide: RestaurantProvider, useClass: OverpassRestaurantProvider },
     { provide: MapProvider, useClass: OpenFreeMapProvider },
     { provide: DirectionsProvider, useClass: ExternalDirectionsProvider },
+    { provide: RouteProvider, useClass: OsrmRouteProvider },
   ],
 };

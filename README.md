@@ -33,7 +33,7 @@ only active in production builds.
 ## Layout
 
 - `src/app/core/` — models, config, ranking, opening-hours parsing, stores and services.
-  - `providers.ts` defines `RestaurantProvider`, `MapProvider` and `DirectionsProvider`; the
+  - `providers.ts` defines `RestaurantProvider`, `MapProvider`, `DirectionsProvider` and `RouteProvider`; the
     implementations are bound in `app.config.ts`, so a data source can be swapped in one place.
   - `config.ts` holds endpoints, default map centre, radius options and limits.
 - `src/app/explore/` — the Discover page (search, chips, list, map).

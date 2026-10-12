@@ -233,16 +233,80 @@
           [selectedId]="store.selectedId()"
           [favoriteIds]="prefs.favoriteIds()"
           [userLocation]="location.position()"
+          [route]="store.activeRoute()?.route ?? null"
+          [routeDestinationId]="store.activeRoute()?.place?.id ?? null"
           (placeSelected)="store.selectedId.set($event)"
         />
       } @placeholder {
         <p class="maploading">Loading map…</p>
       }
-      <mat-icon class="centerpin" aria-hidden="true">place</mat-icon>
-      @if (showSearchHere()) {
-        <button type="button" class="expand searchhere" (click)="store.search()">
-          ⌕ &nbsp; {{ store.searched() ? 'Search this area' : 'Search here' }}
-        </button>
+      @if (store.activeRoute(); as active) {
+        <div class="routebar" role="status">
+          <div class="routehead">
+            <div>
+              <span class="eyebrow">Directions</span>
+              <strong>{{ active.place.name }}</strong>
+            </div>
+            <button
+              type="button"
+              class="close"
+              aria-label="Clear route"
+              (click)="store.clearRoute()"
+            >
+              ×
+            </button>
+          </div>
+          @switch (active.state) {
+            @case ('loading') {
+              <p>Finding a route…</p>
+            }
+            @case ('error') {
+              <p>Couldn't find a route right now.</p>
+            }
+            @case ('ready') {
+              <p>
+                <b>{{ duration(active.route!.durationS) }}</b> ·
+                {{ formatDistance(active.route!.distanceM) }}
+                {{ active.fromDevice ? 'from your location' : 'from the searched spot' }}
+              </p>
+            }
+          }
+          <div class="routeactions">
+            <div class="toggles" role="group" aria-label="Travel mode">
+              <button
+                type="button"
+                [class.active]="active.mode === 'walk'"
+                [attr.aria-pressed]="active.mode === 'walk'"
+                (click)="route(active.place, 'walk')"
+              >
+                Walk
+              </button>
+              <button
+                type="button"
+                [class.active]="active.mode === 'drive'"
+                [attr.aria-pressed]="active.mode === 'drive'"
+                (click)="route(active.place, 'drive')"
+              >
+                Drive
+              </button>
+            </div>
+            @if (active.state === 'error') {
+              <button type="button" class="link" (click)="route(active.place, active.mode)">
+                Try again
+              </button>
+            }
+            <a [href]="navigateUrl()" target="_blank" rel="noopener noreferrer"
+              >Navigate in Maps ↗</a
+            >
+          </div>
+        </div>
+      } @else {
+        <mat-icon class="centerpin" aria-hidden="true">place</mat-icon>
+        @if (showSearchHere()) {
+          <button type="button" class="expand searchhere" (click)="store.search()">
+            ⌕ &nbsp; {{ store.searched() ? 'Search this area' : 'Search here' }}
+          </button>
+        }
       }
       <div class="mapfoot">
         <div class="legend">
@@ -271,6 +335,8 @@
   <app-place-detail
     [place]="selected.place"
     [reason]="selected.reason"
+    [inAppDirections]="true"
+    (directionsRequested)="route(selected.place)"
     (closed)="store.selectedId.set(null)"
   />
 }
