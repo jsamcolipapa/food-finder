@@ -4,7 +4,7 @@
     <nav class="nav" aria-label="Main">
       <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="exact">Discover</a>
       <a routerLink="/saved" routerLinkActive="active">
-        Favorites
+        Saved
         @if (prefs.favorites().length; as count) {
           <span class="count">{{ count }}</span>
         }
@@ -15,7 +15,7 @@
   @if (!store.online()) {
     <p class="offline" role="status">
       <mat-icon aria-hidden="true">cloud_off</mat-icon>
-      You're offline. Favorites still work; searching and the map need a connection.
+      You're offline. Saved places still work; searching and the map need a connection.
     </p>
   }
 

@@ -1,4 +1,4 @@
-import { Injectable, computed, inject, signal } from '@angular/core';
+import { Injectable, computed, effect, inject, signal, untracked } from '@angular/core';
 import { APP_CONFIG } from './config';
 import { LocationService } from './location.service';
 import { LatLng, Place, Route, SearchArea, TravelMode } from './models';
@@ -90,6 +90,11 @@ export class ExploreStore {
   constructor() {
     addEventListener('online', () => this.online.set(true));
     addEventListener('offline', () => this.online.set(false));
+    // Opening a place's details is what counts as having viewed it.
+    effect(() => {
+      const place = this.selected()?.place;
+      if (place) untracked(() => this.prefs.recordView(place));
+    });
   }
 
   private autoLocated = false;

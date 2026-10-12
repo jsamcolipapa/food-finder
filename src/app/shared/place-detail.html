@@ -112,6 +112,14 @@
       <button type="button" class="btn quiet" [attr.aria-pressed]="saved()" (click)="toggleSaved()">
         {{ saved() ? '♥ Saved' : '♡ Save' }}
       </button>
+      <button
+        type="button"
+        class="btn quiet"
+        [attr.aria-pressed]="wantToTry()"
+        (click)="toggleWantToTry()"
+      >
+        {{ wantToTry() ? '✓ Want to try' : '＋ Want to try' }}
+      </button>
       @if (!hidden()) {
         <button type="button" class="btn quiet" (click)="hide()">Not for me</button>
       }

@@ -36,6 +36,7 @@ export class PlaceDetail {
   protected readonly hours = computed(() => describeHours(this.place().openingHours));
   protected readonly features = computed(() => this.place().features.map((f) => FEATURE_LABELS[f]));
   protected readonly saved = computed(() => this.prefs.favoriteIds().has(this.place().id));
+  protected readonly wantToTry = computed(() => this.prefs.wantToTryIds().has(this.place().id));
   protected readonly hidden = computed(() => this.prefs.hiddenIds().has(this.place().id));
   protected readonly links = computed(() => this.directions.createLinks(this.place()));
   protected readonly primaryLink = computed(() => this.links()[0]);
@@ -62,6 +63,13 @@ export class PlaceDetail {
   protected toggleSaved(): void {
     const nowSaved = this.prefs.toggleFavorite(this.place());
     this.snackBar.open(nowSaved ? 'Saved on this device' : 'Removed from saved', undefined, {
+      duration: 2500,
+    });
+  }
+
+  protected toggleWantToTry(): void {
+    const added = this.prefs.toggleWantToTry(this.place());
+    this.snackBar.open(added ? 'Added to Want to try' : 'Removed from Want to try', undefined, {
       duration: 2500,
     });
   }

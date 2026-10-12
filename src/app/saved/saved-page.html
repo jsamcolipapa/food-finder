@@ -1,25 +1,44 @@
 <div class="main">
   <div class="eyebrow">Kept on this device</div>
-  <h1 class="title">Favorites</h1>
-  <p class="sub">Saved in this browser only — they don't sync to other devices.</p>
+  <h1 class="title">Saved</h1>
+  <p class="sub">Stored in this browser only — nothing here syncs to other devices.</p>
 
-  <section class="list" aria-label="Favorites">
-    @for (place of prefs.favorites(); track place.id) {
+  <nav class="toggles" aria-label="Lists">
+    @for (t of tabs; track t.id) {
+      <a
+        routerLink="/saved"
+        [queryParams]="{ list: t.id }"
+        [class.active]="t.id === tab().id"
+        [attr.aria-current]="t.id === tab().id ? 'page' : null"
+      >
+        {{ t.label }} <span class="n">{{ count(t.id) }}</span>
+      </a>
+    }
+  </nav>
+
+  <section class="list" [attr.aria-label]="tab().label">
+    @for (place of places(); track place.id) {
       <app-place-card
         [place]="place"
-        [saved]="true"
+        [saved]="prefs.favoriteIds().has(place.id)"
         (opened)="openId.set(place.id)"
         (savedToggled)="prefs.toggleFavorite(place)"
       />
     } @empty {
       <div class="state">
-        <p>Nothing saved yet. Tap the heart on a place to keep it here.</p>
+        <p>{{ tab().empty }}</p>
         <a class="btn" routerLink="/">Discover nearby</a>
       </div>
     }
   </section>
 
-  @if (prefs.hidden().length) {
+  @if (tab().id === 'recent' && places().length) {
+    <button type="button" class="btn quiet clear" (click)="prefs.clearRecent()">
+      Clear recent
+    </button>
+  }
+
+  @if (tab().id === 'favorites' && prefs.hidden().length) {
     <h2>Hidden from results</h2>
     <ul class="hidden">
       @for (place of prefs.hidden(); track place.id) {

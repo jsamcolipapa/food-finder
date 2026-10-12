@@ -112,12 +112,14 @@ dd .closed {
 
 .actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   margin-top: 14px;
 }
 
 .actions .btn {
-  flex: 1;
+  flex: 1 1 40%;
+  white-space: nowrap;
 }
 
 .hint {
