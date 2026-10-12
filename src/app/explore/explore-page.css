@@ -24,11 +24,11 @@
 
 .loc {
   flex: none;
-  background: #fff;
+  background: var(--white);
   border: 1px solid var(--line);
   border-radius: 13px;
   padding: 12px 16px;
-  color: var(--green);
+  color: var(--primary-strong);
   font-weight: 700;
   box-shadow: var(--shadow);
 }
@@ -36,10 +36,10 @@
 .notice {
   margin: 0 0 16px;
   padding: 12px 16px;
-  border: 1px solid #f1cdb9;
+  border: 1px solid var(--notice-line);
   border-radius: 13px;
-  background: #fbe9df;
-  color: #7a3413;
+  background: var(--notice-bg);
+  color: var(--notice-ink);
 }
 
 .notice details {
@@ -67,7 +67,7 @@
 }
 
 .searchbox {
-  background: #fff;
+  background: var(--white);
   border: 1px solid var(--line);
   border-radius: 17px;
   padding: 15px 18px;
@@ -79,7 +79,7 @@
 }
 
 .searchbox:focus-within {
-  border-color: #8aa888;
+  border-color: var(--primary);
 }
 
 .searchbox input {
@@ -96,7 +96,7 @@
 }
 
 .kbd {
-  color: #8b9188;
+  color: var(--muted);
 }
 
 .filterhead {
@@ -135,8 +135,8 @@
   border: 1px solid var(--line);
   border-radius: 8px;
   padding: 2px 4px;
-  background: #fff;
-  color: var(--green);
+  background: var(--white);
+  color: var(--primary-strong);
   font-weight: 700;
 }
 
@@ -150,21 +150,21 @@
   border: 1px solid var(--line);
   border-radius: 100px;
   padding: 8px 14px;
-  background: #fff;
-  color: #525b52;
+  background: var(--white);
+  color: var(--muted);
   font-weight: 650;
   white-space: nowrap;
 }
 
 .pill.active {
-  background: var(--green);
-  border-color: var(--green);
-  color: #fff;
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--white);
 }
 
 .toggles {
   display: flex;
-  background: #eaece5;
+  background: var(--quiet);
   padding: 4px;
   border-radius: 11px;
   gap: 4px;
@@ -174,13 +174,13 @@
   border-radius: 8px;
   padding: 8px 13px;
   background: transparent;
-  color: #586057;
+  color: var(--muted);
   font-weight: 700;
 }
 
 .toggles button.active {
-  background: #fff;
-  color: var(--green);
+  background: var(--white);
+  color: var(--primary-strong);
   box-shadow: 0 2px 5px #0001;
 }
 
@@ -201,11 +201,11 @@
   display: grid;
   gap: 12px;
   justify-items: start;
-  background: #fff;
+  background: var(--white);
   border: 1px solid var(--line);
   border-radius: 18px;
   padding: 22px;
-  box-shadow: 0 3px 14px #27332108;
+  box-shadow: 0 3px 14px #3a241408;
 }
 
 .state h3 {
@@ -215,7 +215,7 @@
 
 .state p {
   margin: 0;
-  color: #566052;
+  color: var(--muted);
 }
 
 .state mat-progress-bar {
@@ -252,14 +252,14 @@
   max-height: 760px;
   border-radius: 20px;
   overflow: hidden;
-  border: 1px solid #dce4d5;
-  background: #e4eadb;
+  border: 1px solid var(--line);
+  background: #efe6d8;
 }
 
 .maploading {
   margin: 0;
   padding: 24px;
-  color: #72806e;
+  color: var(--muted);
 }
 
 .centerpin {
@@ -270,7 +270,7 @@
   height: 40px;
   font-size: 40px;
   transform: translate(-50%, -92%);
-  color: var(--orange);
+  color: var(--ink);
   text-shadow: 0 2px 3px #0004;
   pointer-events: none;
 }
@@ -286,8 +286,8 @@
   gap: 8px;
   padding: 12px 14px;
   border-radius: 14px;
-  background: #fff;
-  box-shadow: 0 5px 15px #18291c24;
+  background: var(--white);
+  box-shadow: 0 5px 15px #3a241424;
 }
 
 .routehead {
@@ -308,7 +308,7 @@
 
 .routebar p {
   margin: 0;
-  color: #566052;
+  color: var(--muted);
 }
 
 .routebar .close {
@@ -316,7 +316,7 @@
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  background: #f0f2ec;
+  background: var(--quiet);
   font-size: 17px;
 }
 
@@ -340,7 +340,7 @@
 .routeactions .link {
   padding: 0;
   background: none;
-  color: var(--green);
+  color: var(--primary-strong);
   font-weight: 700;
   text-decoration: underline;
 }
@@ -362,21 +362,21 @@
 }
 
 .legend {
-  background: #fff;
+  background: var(--white);
   padding: 9px 12px;
   border-radius: 11px;
   font-size: 11px;
   box-shadow: var(--shadow);
-  color: #526050;
+  color: var(--muted);
 }
 
 .expand {
-  background: #fff;
+  background: var(--white);
   border-radius: 11px;
   padding: 10px 12px;
-  color: var(--green);
+  color: var(--primary-strong);
   font-weight: 800;
-  box-shadow: 0 5px 15px #18291c24;
+  box-shadow: 0 5px 15px #3a241424;
   white-space: nowrap;
 }
 

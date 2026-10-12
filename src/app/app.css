@@ -6,7 +6,7 @@
 
 .top {
   height: 76px;
-  background: #fff;
+  background: var(--white);
   border-bottom: 1px solid var(--line);
   display: flex;
   align-items: center;
@@ -21,7 +21,7 @@
   font-weight: 850;
   letter-spacing: -1.3px;
   font-size: 25px;
-  color: var(--green);
+  color: var(--primary);
   display: flex;
   gap: 9px;
   align-items: center;
@@ -32,7 +32,7 @@
   width: 34px;
   height: 34px;
   border-radius: 12px;
-  background: var(--lime);
+  background: var(--primary-soft);
   display: grid;
   place-items: center;
   font-size: 19px;
@@ -48,20 +48,20 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  color: #667067;
+  color: var(--muted);
   text-decoration: none;
 }
 
 .nav a.active {
-  color: var(--green);
+  color: var(--primary-strong);
 }
 
 .count {
   min-width: 20px;
   padding: 0 6px;
   border-radius: 20px;
-  background: var(--lime);
-  color: var(--green);
+  background: var(--highlight);
+  color: var(--ink);
   font-size: 12px;
   text-align: center;
 }
@@ -72,8 +72,8 @@
   gap: 8px;
   margin: 0;
   padding: 10px 5.5%;
-  background: #fbe9df;
-  color: #7a3413;
+  background: var(--notice-bg);
+  color: var(--notice-ink);
 }
 
 .mobilebar {
@@ -91,7 +91,7 @@
     bottom: 0;
     left: 0;
     right: 0;
-    background: #fff;
+    background: var(--white);
     border-top: 1px solid var(--line);
     justify-content: space-around;
     padding: 10px 8px calc(10px + env(safe-area-inset-bottom));
@@ -99,7 +99,7 @@
   }
 
   .mobilebar a {
-    color: #6c7469;
+    color: var(--muted);
     font-size: 11px;
     display: flex;
     flex-direction: column;
@@ -109,7 +109,7 @@
   }
 
   .mobilebar a.active {
-    color: var(--green);
+    color: var(--primary-strong);
   }
 
   main {
