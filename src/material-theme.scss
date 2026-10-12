@@ -1,0 +1,31 @@
+// Angular Material theme. Material supplies behaviour for a few controls (snack bar,
+// progress bar, icons); the look comes from the brand tokens in styles.css.
+@use '@angular/material' as mat;
+
+html {
+  @include mat.theme(
+    (
+      color: (
+        primary: mat.$green-palette,
+        tertiary: mat.$orange-palette,
+      ),
+      typography: Inter,
+      density: 0,
+    )
+  );
+
+  // Brand overrides for the generated system tokens.
+  --mat-sys-primary: #245b43;
+  --mat-sys-on-primary: #fff;
+  --mat-sys-primary-container: #d9efb3;
+  --mat-sys-on-primary-container: #1c3a2b;
+  --mat-sys-surface: #fff;
+  --mat-sys-on-surface: #20231f;
+  --mat-sys-on-surface-variant: #686e64;
+  --mat-sys-outline-variant: #e8e9e2;
+}
+
+body {
+  color-scheme: light;
+  margin: 0;
+}

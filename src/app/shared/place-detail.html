@@ -1,0 +1,106 @@
+@let p = place();
+<div class="detail" (click)="$event.target === $event.currentTarget && closed.emit()">
+  <div
+    class="modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="detail-name"
+    cdkTrapFocus
+    cdkTrapFocusAutoCapture
+  >
+    <div class="modalhead">
+      <span class="eyebrow">Place details</span>
+      <button type="button" class="close" aria-label="Close details" (click)="closed.emit()">
+        ×
+      </button>
+    </div>
+
+    <h2 id="detail-name">{{ p.name }}</h2>
+    <div class="kind">{{ kind() }}</div>
+    @if (reason(); as why) {
+      <span class="reason">{{ why }}</span>
+    }
+
+    <dl>
+      <div>
+        <dt>Hours</dt>
+        <dd>
+          @switch (status()) {
+            @case ('open') {
+              <strong class="open">Open now</strong>
+            }
+            @case ('closed') {
+              <strong class="closed">Closed now</strong>
+            }
+            @default {
+              <strong>{{ p.openingHours ? 'Check hours' : 'Not mapped' }}</strong>
+            }
+          }
+          @if (p.openingHours) {
+            · {{ p.openingHours }}
+          }
+        </dd>
+      </div>
+      @if (p.address) {
+        <div>
+          <dt>Address</dt>
+          <dd>{{ p.address }}</dd>
+        </div>
+      }
+      @if (p.phone) {
+        <div>
+          <dt>Phone</dt>
+          <dd>
+            <a href="tel:{{ p.phone }}">{{ p.phone }}</a>
+          </dd>
+        </div>
+      }
+      @if (website(); as url) {
+        <div>
+          <dt>Website</dt>
+          <dd>
+            <a [href]="url" target="_blank" rel="noopener noreferrer">{{ url }}</a>
+          </dd>
+        </div>
+      }
+    </dl>
+
+    <div class="review">
+      @if (missing().length) {
+        <strong>Incomplete listing</strong>
+        <p>No {{ missing().join(', ') }} mapped for this place yet.</p>
+      } @else {
+        <strong>Ratings and online reviews aren’t included</strong>
+        <p>Place details come from OpenStreetMap, which has no customer review feed.</p>
+      }
+    </div>
+
+    <a class="btn go" [href]="primaryLink().url" target="_blank" rel="noopener noreferrer">
+      ↗ &nbsp; Get directions
+    </a>
+    <p class="alt">
+      or open in
+      @for (link of otherLinks(); track link.label; let last = $last) {
+        <a [href]="link.url" target="_blank" rel="noopener noreferrer">{{ link.label }}</a>
+        @if (!last) {
+          ·
+        }
+      }
+    </p>
+
+    <div class="actions">
+      <button type="button" class="btn quiet" [attr.aria-pressed]="saved()" (click)="toggleSaved()">
+        {{ saved() ? '♥ Saved' : '♡ Save' }}
+      </button>
+      @if (!hidden()) {
+        <button type="button" class="btn quiet" (click)="hide()">Not for me</button>
+      }
+    </div>
+
+    <p class="hint">
+      Source:
+      <a [href]="p.sourceUrl" target="_blank" rel="noopener noreferrer">OpenStreetMap {{ p.id }}</a>
+      — open it to check or correct this listing. © OpenStreetMap contributors.
+    </p>
+  </div>
+</div>

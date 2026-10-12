@@ -1,0 +1,64 @@
+<ul class="chips" aria-label="Cravings">
+  <li>
+    <button
+      type="button"
+      class="chip"
+      [class.active]="!prefs.selectedIds().length"
+      [attr.aria-pressed]="!prefs.selectedIds().length"
+      (click)="prefs.selectedIds.set([])"
+    >
+      ✦ &nbsp;For you
+    </button>
+  </li>
+  @for (pref of prefs.all(); track pref.id) {
+    @let selected = prefs.selectedIds().includes(pref.id);
+    <li class="group">
+      <button
+        type="button"
+        class="chip"
+        [class.active]="selected"
+        [attr.aria-pressed]="selected"
+        (click)="prefs.toggleSelected(pref.id)"
+      >
+        <span aria-hidden="true">{{ icons[pref.id] ?? '＋' }} &nbsp;</span>{{ pref.label }}
+      </button>
+      @if (pref.custom) {
+        <button
+          type="button"
+          class="remove-chip"
+          [attr.aria-label]="'Remove ' + pref.label + ' preference'"
+          (click)="prefs.removeCustom(pref.id)"
+        >
+          ×
+        </button>
+      }
+    </li>
+  }
+  @if (!adding()) {
+    <li>
+      <button type="button" class="chip" (click)="adding.set(true)">＋ &nbsp;Add preference</button>
+    </li>
+  }
+</ul>
+
+@if (adding()) {
+  <form class="add-pref" (submit)="$event.preventDefault(); add(input)">
+    <input
+      #input
+      autofocus
+      autocomplete="off"
+      placeholder="e.g. Thai, spicy noodles"
+      aria-label="New food preference"
+      [attr.maxlength]="maxLength"
+      [attr.aria-invalid]="!!error()"
+      (keydown.escape)="cancel()"
+    />
+    <button type="submit">Add</button>
+    <button class="cancel" type="button" (click)="cancel()">Cancel</button>
+    @if (error(); as message) {
+      <small class="error" role="alert">{{ message }}</small>
+    } @else {
+      <small>Saved on this device</small>
+    }
+  </form>
+}
