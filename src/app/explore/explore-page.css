@@ -482,4 +482,14 @@
   .toggles {
     display: none;
   }
+
+  /* Keep the directions panel short so the map below it stays on screen. */
+  .routebar {
+    gap: 4px;
+    padding: 10px 12px;
+  }
+
+  .routebar .eyebrow {
+    display: none;
+  }
 }
