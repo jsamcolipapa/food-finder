@@ -272,11 +272,27 @@
               <p>Couldn't find a route right now.</p>
             }
             @case ('ready') {
-              <p>
-                <b>{{ duration(active.route!.durationS) }}</b> ·
-                {{ formatDistance(active.route!.distanceM) }}
-                {{ active.fromDevice ? 'from your location' : 'from the searched spot' }}
-              </p>
+              @if (active.arrived) {
+                <p><b>You've arrived</b></p>
+              } @else if (active.live) {
+                <p>
+                  <b>{{ duration(active.remainingS ?? active.route!.durationS) }}</b> ·
+                  {{ formatDistance(active.remainingM ?? active.route!.distanceM) }} to go
+                </p>
+              } @else {
+                <p>
+                  <b>{{ duration(active.route!.durationS) }}</b> ·
+                  {{ formatDistance(active.route!.distanceM) }}
+                  from the searched spot
+                </p>
+              }
+              @if (active.live && !active.arrived) {
+                @if (location.watchFailed()) {
+                  <p class="live paused">Live updates paused — waiting for your location</p>
+                } @else {
+                  <p class="live"><span class="dot" aria-hidden="true"></span>Following you</p>
+                }
+              }
             }
           }
           <div class="routeactions">
@@ -318,7 +334,9 @@
             [favoriteIds]="prefs.favoriteIds()"
             [userLocation]="location.position()"
             [dark]="theme.dark()"
-            [route]="store.activeRoute()?.route ?? null"
+            [route]="routeCoords()"
+            [routeVersion]="store.activeRoute()?.version ?? 0"
+            [routeLive]="store.activeRoute()?.live ?? false"
             [routeDestinationId]="store.activeRoute()?.place?.id ?? null"
             (placeSelected)="store.selectedId.set($event)"
           />

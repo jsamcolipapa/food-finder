@@ -1,5 +1,6 @@
 import { Injectable, computed, effect, inject, signal, untracked } from '@angular/core';
 import { APP_CONFIG } from './config';
+import { distanceM, progressAlong } from './geo';
 import { LocationService } from './location.service';
 import { LatLng, Place, Route, SearchArea, TravelMode } from './models';
 import { PreferencesService } from './preferences.service';
@@ -8,18 +9,25 @@ import { StorageService } from './storage.service';
 import { pickPlace, rankPlaces } from './ranking';
 
 export type LoadState = 'idle' | 'loading' | 'ready' | 'error';
-/** How the current search centre was chosen when the device gave no position. */
 /** The path currently drawn on the map, or the attempt to fetch one. */
 export interface ActiveRoute {
   place: Place;
   origin: LatLng;
-  /** True when the origin is the device position rather than the search pin. */
-  fromDevice: boolean;
   mode: TravelMode;
   state: 'loading' | 'ready' | 'error';
   route?: Route;
+  /** True while the device position is being followed; false when starting from the pin. */
+  live: boolean;
+  /** Bumped when a route is first drawn or recalculated, so the map knows to re-frame it. */
+  version: number;
+  /** While live: the part of the path still ahead, and how far and long it is. */
+  ahead?: [number, number][];
+  remainingM?: number;
+  remainingS?: number;
+  arrived?: boolean;
 }
 
+/** How the current search centre was chosen when the device gave no position. */
 export type Fallback = 'last-search' | 'ip' | null;
 
 /** Search state shared by the explore and saved pages. */
@@ -31,6 +39,9 @@ export class ExploreStore {
   private readonly storage = inject(StorageService);
   private readonly router = inject(RouteProvider);
   private pendingRoute?: AbortController;
+  private routeVersion = 0;
+  private offRouteFixes = 0;
+  private lastRerouteAt = 0;
   private pending?: AbortController;
 
   /** Where the map is currently centred (the pin). */
@@ -95,6 +106,12 @@ export class ExploreStore {
       const place = this.selected()?.place;
       if (place) untracked(() => this.prefs.recordView(place));
     });
+    // Each new device position moves the user along the open route.
+    effect(() => {
+      const position = this.location.position();
+      const accuracy = this.location.accuracyM();
+      if (position) untracked(() => this.followRoute(position, accuracy));
+    });
   }
 
   private autoLocated = false;
@@ -132,23 +149,95 @@ export class ExploreStore {
 
   /**
    * Draws a path to the place from the device position, or from the searched spot when
-   * the device has not provided one.
+   * the device has not provided one. From a device position the route then follows the
+   * user until it is cleared.
    */
   async showRoute(place: Place, mode: TravelMode = 'walk'): Promise<void> {
     this.pendingRoute?.abort();
     const controller = (this.pendingRoute = new AbortController());
     const device = this.location.position();
     const origin = device ?? this.searched()?.center ?? this.mapCenter();
-    const base = { place, origin, fromDevice: !!device, mode };
+    const base = { place, origin, mode, live: false, version: 0 };
+    this.offRouteFixes = 0;
     this.selectedId.set(null);
     this.activeRoute.set({ ...base, state: 'loading' });
     try {
       const route = await this.router.route(origin, place.location, mode, controller.signal);
       if (controller.signal.aborted) return;
-      this.activeRoute.set({ ...base, state: 'ready', route });
+      this.activeRoute.set({
+        ...base,
+        state: 'ready',
+        route,
+        live: !!device,
+        version: ++this.routeVersion,
+      });
+      if (device) this.location.watch();
     } catch {
       if (controller.signal.aborted) return;
       this.activeRoute.set({ ...base, state: 'error' });
+    }
+  }
+
+  /** Updates the open route for a new device position: progress, arrival or re-route. */
+  private followRoute(position: LatLng, accuracyM: number | null): void {
+    const active = this.activeRoute();
+    if (!active?.live || active.state !== 'ready' || !active.route || active.arrived) return;
+    const limits = APP_CONFIG.liveRoute;
+    if (accuracyM !== null && accuracyM > limits.maxAccuracyM) return;
+
+    if (distanceM(position, active.place.location) <= limits.arriveM) {
+      this.activeRoute.set({ ...active, arrived: true, ahead: [], remainingM: 0, remainingS: 0 });
+      this.location.stopWatching();
+      return;
+    }
+
+    const progress = progressAlong(active.route.coordinates, position);
+    if (progress.offRouteM > limits.offRouteM) {
+      // One stray fix is usually GPS noise; a second in a row means the user left the path.
+      this.offRouteFixes++;
+      const cooledDown = Date.now() - this.lastRerouteAt >= limits.rerouteCooldownMs;
+      if (this.offRouteFixes >= limits.offRouteFixes && cooledDown) {
+        void this.reroute(active, position);
+      }
+      return;
+    }
+
+    this.offRouteFixes = 0;
+    this.activeRoute.set({
+      ...active,
+      ahead: progress.remainingCoords,
+      remainingM: progress.remainingM,
+      // The routing server's own pace for this route, applied to what is left.
+      remainingS: active.route.distanceM
+        ? active.route.durationS * (progress.remainingM / active.route.distanceM)
+        : 0,
+    });
+  }
+
+  private async reroute(active: ActiveRoute, origin: LatLng): Promise<void> {
+    this.lastRerouteAt = Date.now();
+    this.offRouteFixes = 0;
+    this.pendingRoute?.abort();
+    const controller = (this.pendingRoute = new AbortController());
+    try {
+      const route = await this.router.route(
+        origin,
+        active.place.location,
+        active.mode,
+        controller.signal,
+      );
+      if (controller.signal.aborted) return;
+      this.activeRoute.set({
+        ...active,
+        origin,
+        route,
+        ahead: undefined,
+        remainingM: undefined,
+        remainingS: undefined,
+        version: ++this.routeVersion,
+      });
+    } catch {
+      // Keep showing the previous route; the next off-path fix after the cooldown retries.
     }
   }
 
@@ -169,6 +258,8 @@ export class ExploreStore {
   clearRoute(): void {
     this.pendingRoute?.abort();
     this.activeRoute.set(null);
+    this.offRouteFixes = 0;
+    this.location.stopWatching();
   }
 
   async search(center: LatLng = this.mapCenter()): Promise<void> {

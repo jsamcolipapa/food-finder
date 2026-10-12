@@ -11,6 +11,11 @@ export class LocationService {
   readonly position = signal<LatLng | null>(null);
   /** What the browser reported for the last failure, shown to help the user fix it. */
   readonly failure = signal<string | null>(null);
+  /** Accuracy radius of the latest watched fix, in metres. */
+  readonly accuracyM = signal<number | null>(null);
+  /** True when a running watch has stopped receiving positions. */
+  readonly watchFailed = signal(false);
+  private watchId: number | null = null;
 
   async request(): Promise<LatLng | null> {
     if (!('geolocation' in navigator)) {
@@ -66,6 +71,31 @@ export class LocationService {
       }
     }
     return null;
+  }
+
+  /**
+   * Keeps `position` up to date until `stopWatching()`. Used only while directions are
+   * open, since continuous high-accuracy location drains the battery.
+   */
+  watch(): void {
+    if (this.watchId !== null || !('geolocation' in navigator)) return;
+    this.watchFailed.set(false);
+    this.watchId = navigator.geolocation.watchPosition(
+      ({ coords }) => {
+        this.accuracyM.set(coords.accuracy);
+        this.position.set({ lat: coords.latitude, lng: coords.longitude });
+        this.watchFailed.set(false);
+      },
+      () => this.watchFailed.set(true),
+      { enableHighAccuracy: true, maximumAge: 5000, timeout: 20000 },
+    );
+  }
+
+  stopWatching(): void {
+    if (this.watchId === null) return;
+    navigator.geolocation.clearWatch(this.watchId);
+    this.watchId = null;
+    this.watchFailed.set(false);
   }
 
   private getPosition(options: PositionOptions): Promise<LatLng> {

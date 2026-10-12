@@ -51,6 +51,14 @@ last searched spot (stored locally) or, failing that, estimates a city-level pos
 visitor's IP address using the services in `ipLocationEndpoints` (`config.ts`). The IP lookup is
 skipped when the user has blocked location for the site. Empty that list to disable it.
 
+## Directions
+
+“Get directions” draws a route on the map. When it starts from the device's own location the
+route follows the user: the position is watched only while the route is open, progress is worked
+out locally against the fetched path, and the routing server is asked again only if the user
+leaves the path. Thresholds are `liveRoute` in `config.ts`. This works only while the app is open
+on screen; browsers don't deliver location to a web app in the background.
+
 ## How results are ordered
 
 Selected cravings filter the list; the rest is distance from the search pin, with places that share

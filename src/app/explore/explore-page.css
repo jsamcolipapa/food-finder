@@ -325,6 +325,26 @@
   color: var(--muted);
 }
 
+.routebar .live {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--fresh);
+}
+
+.routebar .live.paused {
+  color: var(--notice-ink);
+}
+
+.routebar .live .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
 .routebar .close {
   flex: none;
   width: 30px;
