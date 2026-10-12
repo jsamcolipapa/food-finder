@@ -16,6 +16,11 @@ export const APP_CONFIG = {
    * location. Each must return JSON with `latitude` and `longitude`.
    */
   ipLocationEndpoints: ['https://get.geojs.io/v1/ip/geo.json', 'https://ipwho.is/'],
+  /** OSRM-compatible routing servers per travel mode (FOSSGIS community service). */
+  routingEndpoints: {
+    walk: 'https://routing.openstreetmap.de/routed-foot/route/v1/driving',
+    drive: 'https://routing.openstreetmap.de/routed-car/route/v1/driving',
+  },
   overpassTimeoutS: 15,
   requestTimeoutMs: 25000,
   /** Overpass returns an arbitrary subset beyond this, so the UI flags truncation. */

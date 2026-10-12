@@ -24,6 +24,9 @@ export class PlaceDetail {
   readonly place = input.required<Place>();
   /** Why the place was suggested; omitted outside search results. */
   readonly reason = input<string>();
+  /** When true, “Get directions” asks the host to draw a route instead of linking out. */
+  readonly inAppDirections = input(false);
+  readonly directionsRequested = output<void>();
   readonly closed = output<void>();
 
   protected readonly kind = computed(() => describeKind(this.place()));

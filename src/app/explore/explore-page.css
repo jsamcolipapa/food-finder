@@ -269,6 +269,75 @@
   pointer-events: none;
 }
 
+.routebar {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  right: 56px;
+  max-width: 360px;
+  display: grid;
+  gap: 8px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 5px 15px #18291c24;
+}
+
+.routehead {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  gap: 8px;
+}
+
+.routehead div {
+  display: grid;
+  min-width: 0;
+}
+
+.routehead strong {
+  overflow-wrap: anywhere;
+}
+
+.routebar p {
+  margin: 0;
+  color: #566052;
+}
+
+.routebar .close {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #f0f2ec;
+  font-size: 17px;
+}
+
+.routeactions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.routeactions .toggles {
+  display: flex;
+}
+
+.routeactions .toggles button {
+  padding: 6px 12px;
+}
+
+.routeactions .link {
+  padding: 0;
+  background: none;
+  color: var(--green);
+  font-weight: 700;
+  text-decoration: underline;
+}
+
 .mapfoot {
   position: absolute;
   bottom: 34px;

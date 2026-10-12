@@ -14,7 +14,9 @@ import { APP_CONFIG } from '../core/config';
 import { ExploreStore } from '../core/explore.store';
 import { formatDistance } from '../core/geo';
 import { LocationService } from '../core/location.service';
+import { Place, TravelMode } from '../core/models';
 import { PreferencesService } from '../core/preferences.service';
+import { DirectionsProvider } from '../core/providers';
 import { MapView } from '../shared/map-view';
 import { PlaceCard } from '../shared/place-card';
 import { PlaceDetail } from '../shared/place-detail';
@@ -32,6 +34,7 @@ export class ExplorePage {
   protected readonly store = inject(ExploreStore);
   protected readonly prefs = inject(PreferencesService);
   protected readonly location = inject(LocationService);
+  private readonly directions = inject(DirectionsProvider);
 
   private readonly queryInput = viewChild.required<ElementRef<HTMLInputElement>>('query');
   private readonly listEl = viewChild.required<ElementRef<HTMLElement>>('list');
@@ -71,6 +74,22 @@ export class ExplorePage {
       this.store.loadState() !== 'loading' &&
       (this.store.searched() === null || this.store.pinMoved()),
   );
+
+  /** Hand-off link for turn-by-turn navigation along the route being shown. */
+  protected readonly navigateUrl = computed(() => {
+    const active = this.store.activeRoute();
+    return active ? this.directions.createLinks(active.place)[0].url : null;
+  });
+
+  protected route(place: Place, mode: TravelMode = 'walk'): void {
+    this.store.showRoute(place, mode);
+    this.show('map');
+  }
+
+  protected duration(seconds: number): string {
+    const minutes = Math.max(1, Math.round(seconds / 60));
+    return minutes < 60 ? `${minutes} min` : `${Math.floor(minutes / 60)} h ${minutes % 60} min`;
+  }
 
   protected show(view: 'list' | 'map'): void {
     this.view.set(view);

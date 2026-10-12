@@ -14,13 +14,14 @@ import {
 } from '@angular/core';
 import {
   GeoJSONSource,
+  LngLatBounds,
   Map as MapLibreMap,
   Marker,
   NavigationControl,
   setWorkerUrl,
 } from 'maplibre-gl';
 import { APP_CONFIG } from '../core/config';
-import { LatLng, RankedPlace } from '../core/models';
+import { LatLng, RankedPlace, Route } from '../core/models';
 import { MapProvider } from '../core/providers';
 
 // Bundling breaks MapLibre's own worker lookup, so the worker ships as a static asset
@@ -29,6 +30,7 @@ setWorkerUrl(new URL('maplibre/maplibre-gl-worker.mjs', document.baseURI).href);
 
 const SOURCE = 'places';
 const LAYER = 'places-circles';
+const ROUTE_SOURCE = 'route';
 
 @Component({
   selector: 'app-map-view',
@@ -61,6 +63,9 @@ export class MapView implements OnDestroy {
   readonly selectedId = input<string | null>(null);
   readonly favoriteIds = input<ReadonlySet<string>>(new Set());
   readonly userLocation = input<LatLng | null>(null);
+  /** Path to draw, with the place it leads to highlighted. */
+  readonly route = input<Route | null>(null);
+  readonly routeDestinationId = input<string | null>(null);
   readonly placeSelected = output<string>();
 
   private map?: MapLibreMap;
@@ -81,7 +86,7 @@ export class MapView implements OnDestroy {
           rank: index < APP_CONFIG.pageSize ? String(index + 1) : '',
           top: index < APP_CONFIG.pageSize,
           name: place.named && index < APP_CONFIG.pageSize ? place.name : '',
-          selected: place.id === this.selectedId(),
+          selected: place.id === this.selectedId() || place.id === this.routeDestinationId(),
           saved: this.favoriteIds().has(place.id),
         },
       }));
@@ -89,6 +94,37 @@ export class MapView implements OnDestroy {
         this.map
           ?.getSource<GeoJSONSource>(SOURCE)
           ?.setData({ type: 'FeatureCollection', features });
+      }
+    });
+
+    effect(() => {
+      const route = this.route();
+      if (!this.ready() || !this.map) return;
+      const coordinates = route?.coordinates ?? [];
+      this.map.getSource<GeoJSONSource>(ROUTE_SOURCE)?.setData({
+        type: 'FeatureCollection',
+        features: coordinates.length
+          ? [
+              { type: 'Feature', geometry: { type: 'LineString', coordinates }, properties: {} },
+              {
+                type: 'Feature',
+                geometry: { type: 'Point', coordinates: coordinates[0] },
+                properties: { start: true },
+              },
+            ]
+          : [],
+      });
+      if (coordinates.length) {
+        const bounds = coordinates.reduce(
+          (b, c) => b.extend(c),
+          new LngLatBounds(coordinates[0], coordinates[0]),
+        );
+        // Extra room at the top keeps the path clear of the directions panel.
+        this.map.fitBounds(bounds, {
+          padding: { top: 170, bottom: 90, left: 50, right: 50 },
+          maxZoom: 17,
+          duration: 600,
+        });
       }
     });
 
@@ -135,6 +171,38 @@ export class MapView implements OnDestroy {
       map.addSource(SOURCE, {
         type: 'geojson',
         data: { type: 'FeatureCollection', features: [] },
+      });
+      map.addSource(ROUTE_SOURCE, {
+        type: 'geojson',
+        data: { type: 'FeatureCollection', features: [] },
+      });
+      map.addLayer({
+        id: 'route-casing',
+        type: 'line',
+        source: ROUTE_SOURCE,
+        filter: ['==', ['geometry-type'], 'LineString'],
+        layout: { 'line-cap': 'round', 'line-join': 'round' },
+        paint: { 'line-color': '#ffffff', 'line-width': 9 },
+      });
+      map.addLayer({
+        id: 'route-line',
+        type: 'line',
+        source: ROUTE_SOURCE,
+        filter: ['==', ['geometry-type'], 'LineString'],
+        layout: { 'line-cap': 'round', 'line-join': 'round' },
+        paint: { 'line-color': '#2f6fdb', 'line-width': 5 },
+      });
+      map.addLayer({
+        id: 'route-start',
+        type: 'circle',
+        source: ROUTE_SOURCE,
+        filter: ['==', ['geometry-type'], 'Point'],
+        paint: {
+          'circle-radius': 7,
+          'circle-color': '#2f6fdb',
+          'circle-stroke-color': '#ffffff',
+          'circle-stroke-width': 3,
+        },
       });
       // Numbered green pins with a name label, as in the design prototype.
       map.addLayer({
