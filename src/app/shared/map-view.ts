@@ -119,9 +119,17 @@ export class MapView implements OnDestroy {
           (b, c) => b.extend(c),
           new LngLatBounds(coordinates[0], coordinates[0]),
         );
-        // Extra room at the top keeps the path clear of the directions panel.
+        // Padding scales with the map so a short (phone) map still has room for the
+        // path; a tall map also leaves space for the directions panel that overlays it.
+        const height = this.map.getContainer().clientHeight;
+        const edge = Math.min(50, height * 0.15);
         this.map.fitBounds(bounds, {
-          padding: { top: 170, bottom: 90, left: 50, right: 50 },
+          padding: {
+            top: edge + (height > 450 ? 120 : 0),
+            bottom: edge + 30,
+            left: edge,
+            right: edge,
+          },
           maxZoom: 17,
           duration: 600,
         });
@@ -168,6 +176,11 @@ export class MapView implements OnDestroy {
     map.addControl(new NavigationControl({ showCompass: false }), 'top-right');
 
     map.on('load', () => {
+      // On phones the compact credit opens expanded and covers the map buttons; start it
+      // collapsed behind its (i) button. The list below always shows the OSM credit.
+      const credit = map.getContainer().querySelector('.maplibregl-ctrl-attrib.maplibregl-compact');
+      credit?.classList.remove('maplibregl-compact-show');
+      credit?.removeAttribute('open');
       map.addSource(SOURCE, {
         type: 'geojson',
         data: { type: 'FeatureCollection', features: [] },
