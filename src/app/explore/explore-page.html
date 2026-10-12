@@ -24,11 +24,22 @@
       </p>
     }
     @case ('unavailable') {
-      <p class="notice" role="alert">
-        <strong>We couldn't get your location.</strong>
-        Check that location services are turned on for your device and browser, then try again — or
-        move the map and choose “Search here”.
-      </p>
+      <div class="notice" role="alert">
+        <strong>Your device didn't give the browser a location.</strong>
+        This is a device or browser setting rather than a site permission:
+        <ul>
+          <li>
+            On a Mac: System Settings → Privacy &amp; Security → Location Services — turn it on, and
+            turn it on for this browser in the list.
+          </li>
+          <li>On Windows: Settings → Privacy &amp; security → Location.</li>
+          <li>Keep Wi-Fi switched on; computers without GPS locate themselves from it.</li>
+        </ul>
+        Then choose “Use my location” again — or move the map and choose “Search here”.
+        @if (location.failure(); as detail) {
+          <small>Browser message: {{ detail }}</small>
+        }
+      </div>
     }
   }
 

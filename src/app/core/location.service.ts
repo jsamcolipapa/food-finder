@@ -8,6 +8,8 @@ export type LocationState = 'idle' | 'requesting' | 'granted' | 'denied' | 'unav
 export class LocationService {
   readonly state = signal<LocationState>('idle');
   readonly position = signal<LatLng | null>(null);
+  /** What the browser reported for the last failure, shown to help the user fix it. */
+  readonly failure = signal<string | null>(null);
 
   async request(): Promise<LatLng | null> {
     if (!('geolocation' in navigator)) {
@@ -15,14 +17,17 @@ export class LocationService {
       return null;
     }
     this.state.set('requesting');
+    this.failure.set(null);
     try {
       const position = await this.locate();
       this.position.set(position);
       this.state.set('granted');
       return position;
     } catch (error) {
-      const denied = (error as GeolocationPositionError).code === 1; // PERMISSION_DENIED
-      this.state.set(denied ? 'denied' : 'unavailable');
+      const { code, message } = error as GeolocationPositionError;
+      // 1 = PERMISSION_DENIED, 2 = POSITION_UNAVAILABLE, 3 = TIMEOUT
+      this.failure.set(code === 3 ? 'The request timed out.' : message || null);
+      this.state.set(code === 1 ? 'denied' : 'unavailable');
       return null;
     }
   }
