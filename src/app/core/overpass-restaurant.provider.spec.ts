@@ -45,6 +45,17 @@ describe('normalizeElement', () => {
     });
   });
 
+  it('maps practical tags to features, ignoring anything short of a clear yes', () => {
+    const features = (tags: Record<string, string>) =>
+      normalizeElement({ type: 'node', id: 1, lat: 0, lon: 0, tags: { amenity: 'cafe', ...tags } })
+        ?.features;
+    expect(
+      features({ takeaway: 'yes', delivery: 'only', outdoor_seating: 'yes', wheelchair: 'yes' }),
+    ).toEqual(['takeaway', 'delivery', 'outdoor', 'wheelchair']);
+    expect(features({ takeaway: 'no', wheelchair: 'limited' })).toEqual([]);
+    expect(features({})).toEqual([]);
+  });
+
   it('skips elements without coordinates', () => {
     expect(normalizeElement({ type: 'relation', id: 1, tags: { amenity: 'cafe' } })).toBeNull();
   });

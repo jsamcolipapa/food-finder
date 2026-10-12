@@ -20,6 +20,42 @@ h2 {
   margin: 34px 0 12px;
 }
 
+.toggles {
+  display: inline-flex;
+  max-width: 100%;
+  overflow-x: auto;
+  background: var(--quiet);
+  padding: 4px;
+  border-radius: 11px;
+  gap: 4px;
+  margin-bottom: 18px;
+}
+
+.toggles a {
+  flex: none;
+  border-radius: 8px;
+  padding: 8px 13px;
+  color: var(--muted);
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.toggles a.active {
+  background: var(--surface);
+  color: var(--primary-strong);
+  box-shadow: var(--shadow-sm);
+}
+
+.toggles .n {
+  font-weight: 500;
+  opacity: 0.75;
+}
+
+.clear {
+  margin-top: 16px;
+}
+
 .list {
   display: grid;
   gap: 13px;
@@ -29,7 +65,7 @@ h2 {
   display: grid;
   gap: 12px;
   justify-items: start;
-  background: var(--white);
+  background: var(--surface);
   border: 1px solid var(--line);
   border-radius: 18px;
   padding: 22px;
@@ -53,7 +89,7 @@ h2 {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  background: var(--white);
+  background: var(--surface);
   border: 1px solid var(--line);
   border-radius: 14px;
   padding: 10px 12px 10px 16px;

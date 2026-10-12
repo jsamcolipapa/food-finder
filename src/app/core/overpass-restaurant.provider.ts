@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { APP_CONFIG } from './config';
-import { Place, SearchArea } from './models';
+import { Place, PlaceFeature, SearchArea } from './models';
 import { RestaurantProvider } from './providers';
 
 interface OverpassElement {
@@ -31,6 +31,12 @@ export function normalizeElement(el: OverpassElement): Place | null {
   const street = [tags['addr:housenumber'], tags['addr:street']].filter(Boolean).join(' ');
   const address = [street, tags['addr:suburb'], tags['addr:city']].filter(Boolean).join(', ');
   const isYes = (v?: string) => v === 'yes' || v === 'only';
+  const features: PlaceFeature[] = [];
+  if (isYes(tags['takeaway'])) features.push('takeaway');
+  if (isYes(tags['delivery'])) features.push('delivery');
+  if (isYes(tags['outdoor_seating'])) features.push('outdoor');
+  // "limited" access does not qualify, so only an explicit yes counts.
+  if (tags['wheelchair'] === 'yes') features.push('wheelchair');
 
   return {
     id: `${el.type}/${el.id}`,
@@ -44,6 +50,7 @@ export function normalizeElement(el: OverpassElement): Place | null {
       .map((c) => c.trim())
       .filter(Boolean),
     vegetarian: isYes(tags['diet:vegetarian']) || isYes(tags['diet:vegan']),
+    features,
     openingHours: tags['opening_hours'] || undefined,
     address: address || undefined,
     phone: tags['contact:phone'] || tags['phone'] || undefined,

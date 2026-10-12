@@ -1,5 +1,5 @@
 import { distanceM, formatDistance } from './geo';
-import { LatLng, Place, Preference, RankedPlace } from './models';
+import { LatLng, Place, PlaceFeature, Preference, RankedPlace } from './models';
 import { openStatus } from './opening-hours';
 
 /** How much closer a place is treated when it resembles something the user saved. */
@@ -11,6 +11,8 @@ export interface RankOptions {
   favorites: Place[];
   hiddenIds: ReadonlySet<string>;
   openNowOnly: boolean;
+  /** Only places mapped with every one of these features are kept. */
+  features?: PlaceFeature[];
   /** Free-text search over name, cuisine and type. */
   query?: string;
   now?: Date;
@@ -107,6 +109,7 @@ export function rankPlaces(places: Place[], options: RankOptions): RankedPlace[]
   for (const place of places) {
     if (hiddenIds.has(place.id)) continue;
     if (query && !searchText(place).includes(query)) continue;
+    if (options.features?.some((f) => !place.features.includes(f))) continue;
 
     const matches = selected.filter((p) => matchesPreference(place, p)).map((p) => p.label);
     if (selected.length && !matches.length) continue;
@@ -135,4 +138,20 @@ export function rankPlaces(places: Place[], options: RankOptions): RankedPlace[]
 
   const score = (r: RankedPlace) => r.distanceM * (r.similarToSaved ? SIMILAR_TO_SAVED_FACTOR : 1);
   return ranked.sort((a, b) => score(a) - score(b));
+}
+
+/**
+ * Chooses a place for the user: at random among those known to be open, falling back to
+ * places with unknown hours. Known-closed places are never picked. Returns null when
+ * nothing outside `excludeIds` qualifies.
+ */
+export function pickPlace(
+  results: RankedPlace[],
+  excludeIds: ReadonlySet<string>,
+  random: () => number = Math.random,
+): RankedPlace | null {
+  const candidates = results.filter((r) => !excludeIds.has(r.place.id));
+  const open = candidates.filter((r) => r.status === 'open');
+  const pool = open.length ? open : candidates.filter((r) => r.status === 'unknown');
+  return pool.length ? pool[Math.floor(random() * pool.length)] : null;
 }

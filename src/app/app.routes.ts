@@ -8,7 +8,7 @@ export const routes: Routes = [
   },
   {
     path: 'saved',
-    title: 'Favorites · Crave',
+    title: 'Saved · Crave',
     loadComponent: () => import('./saved/saved-page').then((m) => m.SavedPage),
   },
   { path: '**', redirectTo: '' },

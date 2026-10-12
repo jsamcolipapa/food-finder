@@ -100,12 +100,11 @@
     <div class="tools">
       <button
         type="button"
-        class="pill"
-        [class.active]="prefs.openNowOnly()"
-        [attr.aria-pressed]="prefs.openNowOnly()"
-        (click)="prefs.openNowOnly.set(!prefs.openNowOnly())"
+        class="btn pick"
+        [disabled]="!store.canPick()"
+        (click)="store.pickForMe()"
       >
-        Hide closed
+        ✦ &nbsp;Pick for me
       </button>
       <div class="toggles" role="group" aria-label="Jump to">
         <button type="button" [class.active]="view() === 'list'" (click)="show('list')">
@@ -114,6 +113,30 @@
         <button type="button" [class.active]="view() === 'map'" (click)="show('map')">⌖ Map</button>
       </div>
     </div>
+  </div>
+
+  <div class="quickfilters" role="group" aria-label="More filters">
+    <button
+      type="button"
+      class="pill"
+      [class.active]="prefs.openNowOnly()"
+      [attr.aria-pressed]="prefs.openNowOnly()"
+      (click)="prefs.openNowOnly.set(!prefs.openNowOnly())"
+    >
+      Hide closed
+    </button>
+    @for (option of featureOptions; track option[0]) {
+      @let on = prefs.featureFilters().includes(option[0]);
+      <button
+        type="button"
+        class="pill"
+        [class.active]="on"
+        [attr.aria-pressed]="on"
+        (click)="prefs.toggleFeature(option[0])"
+      >
+        {{ option[1] }}
+      </button>
+    }
   </div>
 
   <div class="content">
@@ -173,7 +196,6 @@
           @for (r of page(); track r.place.id) {
             <app-place-card
               [place]="r.place"
-              [status]="r.status"
               [reason]="r.reason"
               [saved]="prefs.favoriteIds().has(r.place.id)"
               (opened)="store.selectedId.set(r.place.id)"
@@ -185,8 +207,8 @@
                 <h3>No matches for your filters</h3>
                 <p>
                   {{ store.places().length }} places are mapped within
-                  {{ formatDistance(area.radiusM) }}, but none match. Cuisine isn't always recorded,
-                  so try fewer filters.
+                  {{ formatDistance(area.radiusM) }}, but none match. Cuisine, hours and details
+                  like takeaway aren't always recorded, so try fewer filters.
                 </p>
                 <button type="button" class="btn quiet" (click)="clearFilters()">
                   Clear filters
@@ -295,6 +317,7 @@
             [selectedId]="store.selectedId()"
             [favoriteIds]="prefs.favoriteIds()"
             [userLocation]="location.position()"
+            [dark]="theme.dark()"
             [route]="store.activeRoute()?.route ?? null"
             [routeDestinationId]="store.activeRoute()?.place?.id ?? null"
             (placeSelected)="store.selectedId.set($event)"
@@ -339,6 +362,8 @@
     [place]="selected.place"
     [reason]="selected.reason"
     [inAppDirections]="true"
+    [picked]="store.selectedWasPicked()"
+    (another)="store.pickForMe()"
     (directionsRequested)="route(selected.place)"
     (closed)="store.selectedId.set(null)"
   />

@@ -9,7 +9,7 @@
     cdkTrapFocusAutoCapture
   >
     <div class="modalhead">
-      <span class="eyebrow">Place details</span>
+      <span class="eyebrow">{{ picked() ? 'Picked for you' : 'Place details' }}</span>
       <button type="button" class="close" aria-label="Close details" (click)="closed.emit()">
         ×
       </button>
@@ -25,22 +25,24 @@
       <div>
         <dt>Hours</dt>
         <dd>
-          @switch (status()) {
-            @case ('open') {
-              <strong class="open">Open now</strong>
-            }
-            @case ('closed') {
-              <strong class="closed">Closed now</strong>
-            }
-            @default {
-              <strong>{{ p.openingHours ? 'Check hours' : 'Not mapped' }}</strong>
-            }
+          @if (hours().status === 'unknown') {
+            <strong>{{ p.openingHours ? 'Check hours' : 'Not mapped' }}</strong>
+          } @else {
+            <strong [class]="hours().closingSoon ? 'soon' : hours().status">{{
+              hours().label
+            }}</strong>
           }
           @if (p.openingHours) {
             · {{ p.openingHours }}
           }
         </dd>
       </div>
+      @if (features().length) {
+        <div>
+          <dt>Good for</dt>
+          <dd>{{ features().join(' · ') }}</dd>
+        </div>
+      }
       @if (p.address) {
         <div>
           <dt>Address</dt>
@@ -104,8 +106,19 @@
     }
 
     <div class="actions">
+      @if (picked()) {
+        <button type="button" class="btn quiet" (click)="another.emit()">↻ Try another</button>
+      }
       <button type="button" class="btn quiet" [attr.aria-pressed]="saved()" (click)="toggleSaved()">
         {{ saved() ? '♥ Saved' : '♡ Save' }}
+      </button>
+      <button
+        type="button"
+        class="btn quiet"
+        [attr.aria-pressed]="wantToTry()"
+        (click)="toggleWantToTry()"
+      >
+        {{ wantToTry() ? '✓ Want to try' : '＋ Want to try' }}
       </button>
       @if (!hidden()) {
         <button type="button" class="btn quiet" (click)="hide()">Not for me</button>

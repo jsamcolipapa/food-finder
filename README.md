@@ -36,8 +36,8 @@ only active in production builds.
   - `providers.ts` defines `RestaurantProvider`, `MapProvider`, `DirectionsProvider` and `RouteProvider`; the
     implementations are bound in `app.config.ts`, so a data source can be swapped in one place.
   - `config.ts` holds endpoints, default map centre, radius options and limits.
-- `src/styles.css` — the colour palette as CSS variables (the map's copies are in
-  `src/app/core/theme.ts`).
+- `src/styles.css` — the colour palette as CSS variables, light and dark (the map's copies are
+  in `src/app/core/theme.ts`). `ThemeService` applies the theme as `data-theme` on `<html>`.
 - `src/app/explore/` — the Discover page (search, chips, list, map).
 - `src/app/saved/` — favorites and places hidden with “Not for me”.
 - `src/app/shared/` — map view, place card, detail dialog, preference chips.

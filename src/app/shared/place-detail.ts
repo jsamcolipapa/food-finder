@@ -2,8 +2,8 @@ import { ChangeDetectionStrategy, Component, computed, inject, input, output } f
 import { A11yModule } from '@angular/cdk/a11y';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { Place } from '../core/models';
-import { openStatus } from '../core/opening-hours';
+import { FEATURE_LABELS, Place } from '../core/models';
+import { describeHours } from '../core/opening-hours';
 import { PreferencesService } from '../core/preferences.service';
 import { DirectionsProvider } from '../core/providers';
 import { describeKind } from '../core/ranking';
@@ -27,11 +27,16 @@ export class PlaceDetail {
   /** When true, “Get directions” asks the host to draw a route instead of linking out. */
   readonly inAppDirections = input(false);
   readonly directionsRequested = output<void>();
+  /** True when the app chose this place for the user; offers “Try another”. */
+  readonly picked = input(false);
+  readonly another = output<void>();
   readonly closed = output<void>();
 
   protected readonly kind = computed(() => describeKind(this.place()));
-  protected readonly status = computed(() => openStatus(this.place().openingHours));
+  protected readonly hours = computed(() => describeHours(this.place().openingHours));
+  protected readonly features = computed(() => this.place().features.map((f) => FEATURE_LABELS[f]));
   protected readonly saved = computed(() => this.prefs.favoriteIds().has(this.place().id));
+  protected readonly wantToTry = computed(() => this.prefs.wantToTryIds().has(this.place().id));
   protected readonly hidden = computed(() => this.prefs.hiddenIds().has(this.place().id));
   protected readonly links = computed(() => this.directions.createLinks(this.place()));
   protected readonly primaryLink = computed(() => this.links()[0]);
@@ -58,6 +63,13 @@ export class PlaceDetail {
   protected toggleSaved(): void {
     const nowSaved = this.prefs.toggleFavorite(this.place());
     this.snackBar.open(nowSaved ? 'Saved on this device' : 'Removed from saved', undefined, {
+      duration: 2500,
+    });
+  }
+
+  protected toggleWantToTry(): void {
+    const added = this.prefs.toggleWantToTry(this.place());
+    this.snackBar.open(added ? 'Added to Want to try' : 'Removed from Want to try', undefined, {
       duration: 2500,
     });
   }

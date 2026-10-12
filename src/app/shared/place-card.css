@@ -3,14 +3,14 @@
 }
 
 .card {
-  background: var(--white);
+  background: var(--surface);
   border: 1px solid var(--line);
   border-radius: 18px;
   padding: 12px;
   display: grid;
   grid-template-columns: 128px 1fr;
   gap: 15px;
-  box-shadow: 0 3px 14px #3a241408;
+  box-shadow: var(--shadow-card);
   transition: 0.18s;
   cursor: pointer;
 }
@@ -23,7 +23,7 @@
 .foodimg {
   height: 126px;
   border-radius: 13px;
-  background: linear-gradient(145deg, #ffe8d9, #f6b596);
+  background: var(--tile-a);
   display: grid;
   place-items: center;
   font-size: 50px;
@@ -31,11 +31,11 @@
 }
 
 .foodimg.blue {
-  background: linear-gradient(145deg, #fff0cf, #f3c56b);
+  background: var(--tile-b);
 }
 
 .foodimg.pink {
-  background: linear-gradient(145deg, #fde0e0, #ee9f93);
+  background: var(--tile-c);
 }
 
 .badge {
@@ -115,6 +115,29 @@ h3 {
 .meta .open {
   color: var(--fresh);
   font-weight: 700;
+}
+
+.meta .soon {
+  color: var(--notice-ink);
+  font-weight: 700;
+}
+
+.features {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 0 0 8px;
+  padding: 0;
+  list-style: none;
+}
+
+.features li {
+  padding: 2px 7px;
+  border-radius: 20px;
+  background: var(--quiet);
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
 }
 
 .meta .closed {

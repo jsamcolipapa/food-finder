@@ -14,18 +14,18 @@ html {
     )
   );
 
-  // Brand overrides for the generated system tokens; keep in step with styles.css.
-  --mat-sys-primary: #d03e1a;
-  --mat-sys-on-primary: #fff;
-  --mat-sys-primary-container: #ffe3d6;
-  --mat-sys-on-primary-container: #8f2a10;
-  --mat-sys-surface: #fff;
-  --mat-sys-on-surface: #2a211c;
-  --mat-sys-on-surface-variant: #6b5b50;
-  --mat-sys-outline-variant: #f0e2d2;
+  // Point Material's system tokens at the palette in styles.css, so they follow the
+  // light/dark switch without a second set of values here.
+  --mat-sys-primary: var(--primary);
+  --mat-sys-on-primary: var(--on-primary);
+  --mat-sys-primary-container: var(--primary-soft);
+  --mat-sys-on-primary-container: var(--on-primary-soft);
+  --mat-sys-surface: var(--surface);
+  --mat-sys-on-surface: var(--ink);
+  --mat-sys-on-surface-variant: var(--muted);
+  --mat-sys-outline-variant: var(--line);
 }
 
 body {
-  color-scheme: light;
   margin: 0;
 }

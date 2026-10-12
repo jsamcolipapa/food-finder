@@ -1,11 +1,11 @@
-import { Injectable, computed, inject, signal } from '@angular/core';
+import { Injectable, computed, effect, inject, signal, untracked } from '@angular/core';
 import { APP_CONFIG } from './config';
 import { LocationService } from './location.service';
 import { LatLng, Place, Route, SearchArea, TravelMode } from './models';
 import { PreferencesService } from './preferences.service';
 import { RestaurantProvider, RouteProvider } from './providers';
 import { StorageService } from './storage.service';
-import { rankPlaces } from './ranking';
+import { pickPlace, rankPlaces } from './ranking';
 
 export type LoadState = 'idle' | 'loading' | 'ready' | 'error';
 /** How the current search centre was chosen when the device gave no position. */
@@ -57,6 +57,7 @@ export class ExploreStore {
       favorites: this.prefs.favorites(),
       hiddenIds: this.prefs.hiddenIds(),
       openNowOnly: this.prefs.openNowOnly(),
+      features: this.prefs.featureFilters(),
       query: this.query(),
     });
   });
@@ -64,6 +65,15 @@ export class ExploreStore {
   readonly selected = computed(
     () => this.results().find((r) => r.place.id === this.selectedId()) ?? null,
   );
+
+  /** Places already offered by “Pick for me”, so repeats wait until the rest are used. */
+  private offered = new Set<string>();
+  private readonly pickedId = signal<string | null>(null);
+  /** True while the open place was chosen by “Pick for me” rather than by the user. */
+  readonly selectedWasPicked = computed(
+    () => this.selectedId() !== null && this.selectedId() === this.pickedId(),
+  );
+  readonly canPick = computed(() => this.results().some((r) => r.status !== 'closed'));
 
   /** True when the pin moved far enough that the list no longer describes it. */
   readonly pinMoved = computed(() => {
@@ -80,6 +90,11 @@ export class ExploreStore {
   constructor() {
     addEventListener('online', () => this.online.set(true));
     addEventListener('offline', () => this.online.set(false));
+    // Opening a place's details is what counts as having viewed it.
+    effect(() => {
+      const place = this.selected()?.place;
+      if (place) untracked(() => this.prefs.recordView(place));
+    });
   }
 
   private autoLocated = false;
@@ -137,6 +152,20 @@ export class ExploreStore {
     }
   }
 
+  /** Opens a randomly chosen open place from the current results. */
+  pickForMe(): void {
+    let choice = pickPlace(this.results(), this.offered);
+    if (!choice && this.offered.size) {
+      // Everything has been offered once; start the round again.
+      this.offered = new Set();
+      choice = pickPlace(this.results(), this.offered);
+    }
+    if (!choice) return;
+    this.offered.add(choice.place.id);
+    this.pickedId.set(choice.place.id);
+    this.selectedId.set(choice.place.id);
+  }
+
   clearRoute(): void {
     this.pendingRoute?.abort();
     this.activeRoute.set(null);
@@ -148,6 +177,7 @@ export class ExploreStore {
     const area: SearchArea = { center, radiusM: this.prefs.radiusM() };
     this.loadState.set('loading');
     this.selectedId.set(null);
+    this.offered = new Set();
     this.clearRoute();
     try {
       const places = await this.provider.searchNearby(area, controller.signal);

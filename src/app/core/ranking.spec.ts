@@ -1,5 +1,5 @@
 import { Place, Preference } from './models';
-import { rankPlaces } from './ranking';
+import { pickPlace, rankPlaces } from './ranking';
 
 const origin = { lat: 14.55, lng: 121.02 };
 
@@ -12,6 +12,7 @@ function place(id: string, overrides: Partial<Place> = {}): Place {
     kind: 'restaurant',
     cuisines: [],
     vegetarian: false,
+    features: [],
     sourceUrl: `https://www.openstreetmap.org/${id}`,
     ...overrides,
   };
@@ -117,5 +118,52 @@ describe('rankPlaces text search', () => {
     ];
     expect(rankPlaces(places, { ...base, query: ' RAMEN ' }).map((r) => r.place.id)).toEqual(['a']);
     expect(rankPlaces(places, { ...base, query: 'filip' }).map((r) => r.place.id)).toEqual(['b']);
+  });
+});
+
+describe('rankPlaces feature filters', () => {
+  it('keeps only places mapped with every selected feature', () => {
+    const places = [
+      place('both', { features: ['takeaway', 'delivery'] }),
+      place('one', { features: ['takeaway'] }),
+      place('none'),
+    ];
+    const ids = (features: ('takeaway' | 'delivery')[]) =>
+      rankPlaces(places, { ...base, features })
+        .map((r) => r.place.id)
+        .sort();
+    expect(ids(['takeaway'])).toEqual(['both', 'one']);
+    expect(ids(['takeaway', 'delivery'])).toEqual(['both']);
+    expect(ids([])).toEqual(['both', 'none', 'one']);
+  });
+});
+
+describe('pickPlace', () => {
+  const now = new Date('2026-10-12T12:00:00');
+  const ranked = rankPlaces(
+    [
+      place('open-a', { openingHours: '24/7' }),
+      place('open-b', { openingHours: '24/7' }),
+      place('unknown'),
+      place('closed', { openingHours: 'Mo off' }),
+    ],
+    { ...base, now },
+  );
+  const pick = (exclude: string[], random = 0) =>
+    pickPlace(ranked, new Set(exclude), () => random)?.place.id ?? null;
+
+  it('prefers places known to be open', () => {
+    expect(['open-a', 'open-b']).toContain(pick([], 0));
+    expect(['open-a', 'open-b']).toContain(pick([], 0.99));
+    expect(pick([], 0)).not.toBe(pick([], 0.99));
+  });
+
+  it('skips places already offered, then falls back to unknown hours', () => {
+    expect(pick(['open-a'])).toBe('open-b');
+    expect(pick(['open-a', 'open-b'])).toBe('unknown');
+  });
+
+  it('never picks a place known to be closed', () => {
+    expect(pick(['open-a', 'open-b', 'unknown'])).toBeNull();
   });
 });

@@ -4,6 +4,7 @@ import { SwUpdate } from '@angular/service-worker';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { ExploreStore } from './core/explore.store';
 import { PreferencesService } from './core/preferences.service';
+import { ThemeService } from './core/theme.service';
 
 @Component({
   selector: 'app-root',
@@ -15,7 +16,14 @@ import { PreferencesService } from './core/preferences.service';
 export class App {
   protected readonly store = inject(ExploreStore);
   protected readonly prefs = inject(PreferencesService);
+  protected readonly theme = inject(ThemeService);
   protected readonly exact = { exact: true };
+  protected readonly themeIcons = {
+    auto: 'brightness_auto',
+    light: 'light_mode',
+    dark: 'dark_mode',
+  };
+  protected readonly themeNames = { auto: 'Auto', light: 'Light', dark: 'Dark' };
 
   constructor() {
     // The service worker keeps serving the installed version until the page reloads,

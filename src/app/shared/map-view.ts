@@ -23,7 +23,7 @@ import {
 import { APP_CONFIG } from '../core/config';
 import { LatLng, RankedPlace, Route } from '../core/models';
 import { MapProvider } from '../core/providers';
-import { MAP_COLORS } from '../core/theme';
+import { mapColors } from '../core/theme';
 
 // Bundling breaks MapLibre's own worker lookup, so the worker ships as a static asset
 // (see angular.json) and is resolved against <base href>.
@@ -67,12 +67,19 @@ export class MapView implements OnDestroy {
   /** Path to draw, with the place it leads to highlighted. */
   readonly route = input<Route | null>(null);
   readonly routeDestinationId = input<string | null>(null);
+  /** Switches the base map and overlay colours between the light and dark themes. */
+  readonly dark = input(false);
   readonly placeSelected = output<string>();
 
   private map?: MapLibreMap;
   private userMarker?: Marker;
   private resizeObserver?: ResizeObserver;
-  private readonly ready = signal(false);
+  /**
+   * Bumped each time a base style finishes loading. Swapping styles drops the overlay
+   * sources, so every effect that pushes data reads this and re-runs afterwards.
+   */
+  private readonly styleVersion = signal(0);
+  private appliedDark = false;
 
   constructor() {
     afterNextRender(() => this.init());
@@ -91,7 +98,7 @@ export class MapView implements OnDestroy {
           saved: this.favoriteIds().has(place.id),
         },
       }));
-      if (this.ready()) {
+      if (this.styleVersion()) {
         this.map
           ?.getSource<GeoJSONSource>(SOURCE)
           ?.setData({ type: 'FeatureCollection', features });
@@ -99,8 +106,15 @@ export class MapView implements OnDestroy {
     });
 
     effect(() => {
+      const dark = this.dark();
+      if (!this.map || dark === this.appliedDark) return;
+      this.appliedDark = dark;
+      this.map.setStyle(this.mapProvider.styleUrl(dark));
+    });
+
+    effect(() => {
       const route = this.route();
-      if (!this.ready() || !this.map) return;
+      if (!this.styleVersion() || !this.map) return;
       const coordinates = route?.coordinates ?? [];
       this.map.getSource<GeoJSONSource>(ROUTE_SOURCE)?.setData({
         type: 'FeatureCollection',
@@ -139,7 +153,7 @@ export class MapView implements OnDestroy {
 
     effect(() => {
       const target = this.center();
-      if (!this.ready() || !this.map) return;
+      if (!this.styleVersion() || !this.map) return;
       const current = this.map.getCenter();
       if (Math.abs(current.lat - target.lat) > 1e-6 || Math.abs(current.lng - target.lng) > 1e-6) {
         this.map.easeTo({ center: [target.lng, target.lat], duration: 600 });
@@ -148,7 +162,7 @@ export class MapView implements OnDestroy {
 
     effect(() => {
       const position = this.userLocation();
-      if (!this.ready() || !this.map || !position) return;
+      if (!this.styleVersion() || !this.map || !position) return;
       if (!this.userMarker) {
         const dot = document.createElement('div');
         dot.className = 'user-dot';
@@ -166,9 +180,10 @@ export class MapView implements OnDestroy {
 
   private init(): void {
     const start = this.center();
+    this.appliedDark = this.dark();
     const map = (this.map = new MapLibreMap({
       container: this.container().nativeElement,
-      style: this.mapProvider.styleUrl,
+      style: this.mapProvider.styleUrl(this.dark()),
       center: [start.lng, start.lat],
       zoom: APP_CONFIG.defaultZoom,
       // Full credit line on wide maps; the collapsible (i) form where it would wrap.
@@ -176,12 +191,17 @@ export class MapView implements OnDestroy {
     }));
     map.addControl(new NavigationControl({ showCompass: false }), 'top-right');
 
-    map.on('load', () => {
+    map.once('load', () => {
       // On phones the compact credit opens expanded and covers the map buttons; start it
       // collapsed behind its (i) button. The list below always shows the OSM credit.
       const credit = map.getContainer().querySelector('.maplibregl-ctrl-attrib.maplibregl-compact');
       credit?.classList.remove('maplibregl-compact-show');
       credit?.removeAttribute('open');
+    });
+
+    // Runs for the first style and again after every theme switch.
+    map.on('style.load', () => {
+      const colors = mapColors(this.appliedDark);
       map.addSource(SOURCE, {
         type: 'geojson',
         data: { type: 'FeatureCollection', features: [] },
@@ -196,7 +216,7 @@ export class MapView implements OnDestroy {
         source: ROUTE_SOURCE,
         filter: ['==', ['geometry-type'], 'LineString'],
         layout: { 'line-cap': 'round', 'line-join': 'round' },
-        paint: { 'line-color': MAP_COLORS.halo, 'line-width': 9 },
+        paint: { 'line-color': colors.halo, 'line-width': 9 },
       });
       map.addLayer({
         id: 'route-line',
@@ -204,7 +224,7 @@ export class MapView implements OnDestroy {
         source: ROUTE_SOURCE,
         filter: ['==', ['geometry-type'], 'LineString'],
         layout: { 'line-cap': 'round', 'line-join': 'round' },
-        paint: { 'line-color': MAP_COLORS.route, 'line-width': 5 },
+        paint: { 'line-color': colors.route, 'line-width': 5 },
       });
       map.addLayer({
         id: 'route-start',
@@ -213,12 +233,12 @@ export class MapView implements OnDestroy {
         filter: ['==', ['geometry-type'], 'Point'],
         paint: {
           'circle-radius': 7,
-          'circle-color': MAP_COLORS.route,
-          'circle-stroke-color': MAP_COLORS.halo,
+          'circle-color': colors.route,
+          'circle-stroke-color': colors.halo,
           'circle-stroke-width': 3,
         },
       });
-      // Numbered green pins with a name label, as in the design prototype.
+      // Numbered pins with a name label, as in the design prototype.
       map.addLayer({
         id: LAYER,
         type: 'circle',
@@ -227,8 +247,8 @@ export class MapView implements OnDestroy {
         paint: {
           'circle-radius': ['case', ['get', 'selected'], 15, ['get', 'top'], 12, 5],
           'circle-opacity': ['case', ['any', ['get', 'top'], ['get', 'selected']], 1, 0.75],
-          'circle-color': ['case', ['get', 'saved'], MAP_COLORS.pinSaved, MAP_COLORS.pin],
-          'circle-stroke-color': MAP_COLORS.halo,
+          'circle-color': ['case', ['get', 'saved'], colors.pinSaved, colors.pin],
+          'circle-stroke-color': colors.halo,
           'circle-stroke-width': ['case', ['get', 'selected'], 4, ['get', 'top'], 2, 1],
         },
       });
@@ -243,7 +263,9 @@ export class MapView implements OnDestroy {
           'text-allow-overlap': true,
           'text-ignore-placement': true,
         },
-        paint: { 'text-color': MAP_COLORS.halo },
+        paint: {
+          'text-color': ['case', ['get', 'saved'], colors.onPinSaved, colors.onPin],
+        },
       });
       map.addLayer({
         id: 'places-labels',
@@ -258,12 +280,12 @@ export class MapView implements OnDestroy {
           'text-max-width': 9,
         },
         paint: {
-          'text-color': MAP_COLORS.label,
-          'text-halo-color': MAP_COLORS.halo,
+          'text-color': colors.label,
+          'text-halo-color': colors.halo,
           'text-halo-width': 2,
         },
       });
-      this.ready.set(true);
+      this.styleVersion.update((v) => v + 1);
     });
 
     map.on('moveend', () => {

@@ -6,6 +6,7 @@ export const APP_CONFIG = {
   defaultCenter: { lat: 14.5547, lng: 121.0244 } as LatLng,
   defaultZoom: 15,
   mapStyleUrl: 'https://tiles.openfreemap.org/styles/liberty',
+  mapDarkStyleUrl: 'https://tiles.openfreemap.org/styles/dark',
   /** Tried in order; the next one is used only when the previous fails. */
   overpassEndpoints: [
     'https://overpass-api.de/api/interpreter',

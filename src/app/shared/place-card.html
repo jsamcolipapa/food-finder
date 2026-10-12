@@ -1,7 +1,7 @@
 @let p = place();
 <article class="card" (click)="opened.emit()">
   <div class="foodimg" [class]="tone()" aria-hidden="true">
-    @if (status() === 'open') {
+    @if (hours().status === 'open') {
       <span class="badge">Open now</span>
     }
     {{ emoji() }}
@@ -26,17 +26,7 @@
       </button>
     </div>
     <div class="meta">
-      @switch (status()) {
-        @case ('open') {
-          <span class="open">Open now</span>
-        }
-        @case ('closed') {
-          <span class="closed">Closed now</span>
-        }
-        @default {
-          <span>Hours unknown</span>
-        }
-      }
+      <span [class]="hours().closingSoon ? 'soon' : hours().status">{{ hours().label }}</span>
       @if (!p.cuisines.length) {
         <span>· Cuisine not mapped</span>
       }
@@ -44,6 +34,13 @@
         <span class="address">· {{ p.address }}</span>
       }
     </div>
+    @if (features().length) {
+      <ul class="features" aria-label="Good for">
+        @for (feature of features(); track feature) {
+          <li>{{ feature }}</li>
+        }
+      </ul>
+    }
     @if (reason(); as why) {
       <span class="reason">{{ why }}</span>
     }

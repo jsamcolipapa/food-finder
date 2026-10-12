@@ -1,6 +1,6 @@
 import { Injectable, computed, effect, inject, signal } from '@angular/core';
 import { APP_CONFIG } from './config';
-import { Place, Preference } from './models';
+import { Place, PlaceFeature, Preference } from './models';
 import { StorageService } from './storage.service';
 
 const BUILT_IN: Preference[] = [
@@ -12,7 +12,10 @@ const BUILT_IN: Preference[] = [
   { id: 'vegetarian', label: 'Vegetarian', keywords: ['vegetarian', 'vegan'], custom: false },
 ];
 
+export type ThemeChoice = 'auto' | 'light' | 'dark';
+
 export const MAX_CUSTOM_LABEL_LENGTH = 30;
+const MAX_RECENT = 20;
 
 /** Everything the user tunes, persisted in this browser only (no account, no sync). */
 @Injectable({ providedIn: 'root' })
@@ -21,23 +24,44 @@ export class PreferencesService {
 
   readonly custom = signal<Preference[]>(this.storage.read('customPreferences', []));
   readonly selectedIds = signal<string[]>(this.storage.read('selectedPreferences', []));
-  readonly favorites = signal<Place[]>(this.storage.read('favorites', []));
-  readonly hidden = signal<Place[]>(this.storage.read('hidden', []));
+  readonly favorites = signal<Place[]>(this.readPlaces('favorites'));
+  readonly hidden = signal<Place[]>(this.readPlaces('hidden'));
+  readonly wantToTry = signal<Place[]>(this.readPlaces('wantToTry'));
+  /** Places whose details were opened, newest first. */
+  readonly recent = signal<Place[]>(this.readPlaces('recent'));
   readonly radiusM = signal<number>(this.storage.read('radiusM', APP_CONFIG.defaultRadiusM));
   readonly openNowOnly = signal<boolean>(this.storage.read('openNowOnly', false));
+  readonly theme = signal<ThemeChoice>(this.storage.read('theme', 'auto'));
+  readonly featureFilters = signal<PlaceFeature[]>(this.storage.read('featureFilters', []));
 
   readonly all = computed(() => [...BUILT_IN, ...this.custom()]);
   readonly selected = computed(() => this.all().filter((p) => this.selectedIds().includes(p.id)));
   readonly favoriteIds = computed(() => new Set(this.favorites().map((p) => p.id)));
   readonly hiddenIds = computed(() => new Set(this.hidden().map((p) => p.id)));
+  readonly wantToTryIds = computed(() => new Set(this.wantToTry().map((p) => p.id)));
 
   constructor() {
     effect(() => this.storage.write('customPreferences', this.custom()));
     effect(() => this.storage.write('selectedPreferences', this.selectedIds()));
     effect(() => this.storage.write('favorites', this.favorites()));
     effect(() => this.storage.write('hidden', this.hidden()));
+    effect(() => this.storage.write('wantToTry', this.wantToTry()));
+    effect(() => this.storage.write('recent', this.recent()));
     effect(() => this.storage.write('radiusM', this.radiusM()));
     effect(() => this.storage.write('openNowOnly', this.openNowOnly()));
+    effect(() => this.storage.write('featureFilters', this.featureFilters()));
+    effect(() => this.storage.write('theme', this.theme()));
+  }
+
+  /** Places stored by older versions lack fields added since; fill in their defaults. */
+  private readPlaces(key: string): Place[] {
+    return this.storage.read<Place[]>(key, []).map((p) => ({ ...p, features: p.features ?? [] }));
+  }
+
+  toggleFeature(feature: PlaceFeature): void {
+    this.featureFilters.update((list) =>
+      list.includes(feature) ? list.filter((f) => f !== feature) : [...list, feature],
+    );
   }
 
   toggleSelected(id: string): void {
@@ -79,6 +103,24 @@ export class PreferencesService {
       saved ? list.filter((p) => p.id !== place.id) : [...list, place],
     );
     return !saved;
+  }
+
+  toggleWantToTry(place: Place): boolean {
+    const listed = this.wantToTryIds().has(place.id);
+    this.wantToTry.update((list) =>
+      listed ? list.filter((p) => p.id !== place.id) : [...list, place],
+    );
+    return !listed;
+  }
+
+  recordView(place: Place): void {
+    this.recent.update((list) =>
+      [place, ...list.filter((p) => p.id !== place.id)].slice(0, MAX_RECENT),
+    );
+  }
+
+  clearRecent(): void {
+    this.recent.set([]);
   }
 
   hide(place: Place): void {
