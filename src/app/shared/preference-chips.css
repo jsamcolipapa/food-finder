@@ -22,19 +22,19 @@ li {
   border: 1px solid var(--line);
   border-radius: 100px;
   padding: 9px 15px;
-  background: #fff;
-  color: #525b52;
+  background: var(--white);
+  color: var(--muted);
   font-weight: 650;
 }
 
 .chip.active {
-  background: var(--green);
-  border-color: var(--green);
-  color: #fff;
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--white);
 }
 
 .chip:hover {
-  border-color: #8ea68e;
+  border-color: var(--primary);
 }
 
 .remove-chip {
@@ -59,20 +59,20 @@ li {
   border: 1px solid var(--line);
   border-radius: 10px;
   padding: 9px 11px;
-  outline-color: #8aa888;
+  outline-color: var(--primary);
 }
 
 .add-pref button {
   padding: 9px 12px;
   border-radius: 10px;
-  background: var(--green);
-  color: #fff;
+  background: var(--primary);
+  color: var(--white);
   font-weight: 700;
 }
 
 .add-pref .cancel {
-  background: #edf0e8;
-  color: #4e5b4f;
+  background: var(--quiet);
+  color: var(--muted);
 }
 
 .add-pref small {
@@ -81,7 +81,7 @@ li {
 }
 
 .add-pref .error {
-  color: #a3361a;
+  color: var(--primary-strong);
 }
 
 @media (max-width: 600px) {

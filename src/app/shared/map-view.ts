@@ -23,6 +23,7 @@ import {
 import { APP_CONFIG } from '../core/config';
 import { LatLng, RankedPlace, Route } from '../core/models';
 import { MapProvider } from '../core/providers';
+import { MAP_COLORS } from '../core/theme';
 
 // Bundling breaks MapLibre's own worker lookup, so the worker ships as a static asset
 // (see angular.json) and is resolved against <base href>.
@@ -195,7 +196,7 @@ export class MapView implements OnDestroy {
         source: ROUTE_SOURCE,
         filter: ['==', ['geometry-type'], 'LineString'],
         layout: { 'line-cap': 'round', 'line-join': 'round' },
-        paint: { 'line-color': '#ffffff', 'line-width': 9 },
+        paint: { 'line-color': MAP_COLORS.halo, 'line-width': 9 },
       });
       map.addLayer({
         id: 'route-line',
@@ -203,7 +204,7 @@ export class MapView implements OnDestroy {
         source: ROUTE_SOURCE,
         filter: ['==', ['geometry-type'], 'LineString'],
         layout: { 'line-cap': 'round', 'line-join': 'round' },
-        paint: { 'line-color': '#2f6fdb', 'line-width': 5 },
+        paint: { 'line-color': MAP_COLORS.route, 'line-width': 5 },
       });
       map.addLayer({
         id: 'route-start',
@@ -212,8 +213,8 @@ export class MapView implements OnDestroy {
         filter: ['==', ['geometry-type'], 'Point'],
         paint: {
           'circle-radius': 7,
-          'circle-color': '#2f6fdb',
-          'circle-stroke-color': '#ffffff',
+          'circle-color': MAP_COLORS.route,
+          'circle-stroke-color': MAP_COLORS.halo,
           'circle-stroke-width': 3,
         },
       });
@@ -226,8 +227,8 @@ export class MapView implements OnDestroy {
         paint: {
           'circle-radius': ['case', ['get', 'selected'], 15, ['get', 'top'], 12, 5],
           'circle-opacity': ['case', ['any', ['get', 'top'], ['get', 'selected']], 1, 0.75],
-          'circle-color': ['case', ['get', 'saved'], '#d9593a', '#245b43'],
-          'circle-stroke-color': '#ffffff',
+          'circle-color': ['case', ['get', 'saved'], MAP_COLORS.pinSaved, MAP_COLORS.pin],
+          'circle-stroke-color': MAP_COLORS.halo,
           'circle-stroke-width': ['case', ['get', 'selected'], 4, ['get', 'top'], 2, 1],
         },
       });
@@ -242,7 +243,7 @@ export class MapView implements OnDestroy {
           'text-allow-overlap': true,
           'text-ignore-placement': true,
         },
-        paint: { 'text-color': '#ffffff' },
+        paint: { 'text-color': MAP_COLORS.halo },
       });
       map.addLayer({
         id: 'places-labels',
@@ -257,8 +258,8 @@ export class MapView implements OnDestroy {
           'text-max-width': 9,
         },
         paint: {
-          'text-color': '#245b43',
-          'text-halo-color': '#ffffff',
+          'text-color': MAP_COLORS.label,
+          'text-halo-color': MAP_COLORS.halo,
           'text-halo-width': 2,
         },
       });
