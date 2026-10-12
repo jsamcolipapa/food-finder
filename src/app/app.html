@@ -1,6 +1,14 @@
 <div class="app">
   <header class="top">
-    <a class="brand" routerLink="/"><span class="mark" aria-hidden="true">✳</span>crave</a>
+    <a class="brand" routerLink="/"
+      ><svg class="mark" viewBox="0 0 512 512" aria-hidden="true">
+        <g stroke="currentColor" stroke-width="56" stroke-linecap="round">
+          <line x1="256" y1="126" x2="256" y2="386" />
+          <line x1="143.4" y1="191" x2="368.6" y2="321" />
+          <line x1="143.4" y1="321" x2="368.6" y2="191" />
+        </g></svg
+      >crave</a
+    >
     <div class="bar-end">
       <nav class="nav" aria-label="Main">
         <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="exact">Discover</a>

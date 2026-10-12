@@ -38,6 +38,8 @@ only active in production builds.
   - `config.ts` holds endpoints, default map centre, radius options and limits.
 - `src/styles.css` — the colour palette as CSS variables, light and dark (the map's copies are
   in `src/app/core/theme.ts`). `ThemeService` applies the theme as `data-theme` on `<html>`.
+- `design/icon.svg` and `public/favicon.svg` — icon artwork; the PNGs in `public/icons/` are
+  rendered from them.
 - `src/app/explore/` — the Discover page (search, chips, list, map).
 - `src/app/saved/` — favorites and places hidden with “Not for me”.
 - `src/app/shared/` — map view, place card, detail dialog, preference chips.

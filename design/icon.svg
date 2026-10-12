@@ -1,0 +1,10 @@
+<!-- Install icon source. Full-bleed so launchers can crop it to any shape; the star stays
+     inside the central 80% safe zone. Regenerate the PNGs in public/icons from this file. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#d03e1a" />
+  <g stroke="#fff8ef" stroke-width="44" stroke-linecap="round">
+    <line x1="256" y1="106" x2="256" y2="406" />
+    <line x1="126.1" y1="181" x2="385.9" y2="331" />
+    <line x1="126.1" y1="331" x2="385.9" y2="181" />
+  </g>
+</svg>
