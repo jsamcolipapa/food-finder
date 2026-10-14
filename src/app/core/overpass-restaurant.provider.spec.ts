@@ -1,4 +1,4 @@
-import { buildQuery, normalizeElement } from './overpass-restaurant.provider';
+import { buildQuery, normalizeCommonsFile, normalizeElement } from './overpass-restaurant.provider';
 
 describe('normalizeElement', () => {
   it('maps tags to a place and never exposes ratings', () => {
@@ -58,6 +58,20 @@ describe('normalizeElement', () => {
 
   it('skips elements without coordinates', () => {
     expect(normalizeElement({ type: 'relation', id: 1, tags: { amenity: 'cafe' } })).toBeNull();
+  });
+
+  it('keeps only explicit Wikimedia Commons file tags', () => {
+    const place = normalizeElement({
+      type: 'node',
+      id: 1,
+      lat: 0,
+      lon: 0,
+      tags: { amenity: 'cafe', wikimedia_commons: 'file:Coffee_shop.jpg' },
+    });
+    expect(place?.commonsFile).toBe('File:Coffee shop.jpg');
+    expect(normalizeCommonsFile('Category:Coffee shops')).toBeUndefined();
+    expect(normalizeCommonsFile('File:one|two.jpg')).toBeUndefined();
+    expect(normalizeCommonsFile(undefined)).toBeUndefined();
   });
 });
 

@@ -1,10 +1,23 @@
 @let p = place();
 <article class="card" (click)="opened.emit()">
-  <div class="foodimg" [class]="tone()" aria-hidden="true">
+  <div class="foodimg" [class]="tone()">
     @if (hours().status === 'open') {
       <span class="badge">Open now</span>
     }
-    {{ emoji() }}
+    @if (photo(); as photo) {
+      <img [src]="photo.thumbnailUrl" [alt]="'Photo of ' + p.name" (error)="photoFailed()" />
+      <a
+        class="photo-source"
+        [href]="photo.filePageUrl"
+        target="_blank"
+        rel="noopener noreferrer"
+        (click)="$event.stopPropagation()"
+      >
+        Commons
+      </a>
+    } @else {
+      <span aria-hidden="true">{{ emoji() }}</span>
+    }
   </div>
   <div class="body">
     <div class="cardtop">

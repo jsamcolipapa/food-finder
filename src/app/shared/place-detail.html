@@ -15,6 +15,22 @@
       </button>
     </div>
 
+    @if (photo(); as photo) {
+      <figure class="place-photo">
+        <img [src]="photo.thumbnailUrl" [alt]="'Photo of ' + p.name" (error)="photoFailed()" />
+        <figcaption>
+          Photo:
+          <a [href]="photo.filePageUrl" target="_blank" rel="noopener noreferrer">Wikimedia Commons</a>
+          @if (photo.creator) {
+            · {{ photo.creator }}
+          }
+          @if (photo.license) {
+            · {{ photo.license }}
+          }
+        </figcaption>
+      </figure>
+    }
+
     <h2 id="detail-name">{{ p.name }}</h2>
     <div class="kind">{{ kind() }}</div>
     @if (reason(); as why) {

@@ -19,6 +19,22 @@ const KIND_LABELS: Record<string, string> = {
   food_court: 'Unnamed food court',
 };
 
+/**
+ * `wikimedia_commons` can also refer to a category or a gallery. Only a concrete
+ * file is suitable for a predictable, attributable card image.
+ */
+export function normalizeCommonsFile(value?: string): string | undefined {
+  const raw = value?.trim();
+  if (!raw || !/^file\s*:/i.test(raw)) return undefined;
+
+  const filename = raw.slice(raw.indexOf(':') + 1).trim().replace(/_/g, ' ');
+  // Pipes and control characters cannot form a safe single MediaWiki title.
+  if (!filename || filename.length > 240 || /[|\u0000-\u001f<>[\]{}]/.test(filename)) {
+    return undefined;
+  }
+  return `File:${filename}`;
+}
+
 /** Maps a raw Overpass element to a Place. The OSM `stars` tag is intentionally ignored. */
 export function normalizeElement(el: OverpassElement): Place | null {
   const tags = el.tags ?? {};
@@ -55,6 +71,7 @@ export function normalizeElement(el: OverpassElement): Place | null {
     address: address || undefined,
     phone: tags['contact:phone'] || tags['phone'] || undefined,
     website: tags['contact:website'] || tags['website'] || undefined,
+    commonsFile: normalizeCommonsFile(tags['wikimedia_commons']),
     sourceUrl: `https://www.openstreetmap.org/${el.type}/${el.id}`,
   };
 }

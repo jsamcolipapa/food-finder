@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, input, output } f
 import { A11yModule } from '@angular/cdk/a11y';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { CommonsPhotoService } from '../core/commons-photo.service';
 import { FEATURE_LABELS, Place } from '../core/models';
 import { describeHours } from '../core/opening-hours';
 import { PreferencesService } from '../core/preferences.service';
@@ -17,6 +18,7 @@ import { describeKind } from '../core/ranking';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PlaceDetail {
+  private readonly photos = inject(CommonsPhotoService);
   private readonly directions = inject(DirectionsProvider);
   private readonly snackBar = inject(MatSnackBar);
   protected readonly prefs = inject(PreferencesService);
@@ -41,6 +43,7 @@ export class PlaceDetail {
   protected readonly links = computed(() => this.directions.createLinks(this.place()));
   protected readonly primaryLink = computed(() => this.links()[0]);
   protected readonly otherLinks = computed(() => this.links().slice(1));
+  protected readonly photo = computed(() => this.photos.photoFor(this.place().commonsFile)());
 
   protected readonly website = computed(() => {
     const raw = this.place().website?.trim();
@@ -82,5 +85,9 @@ export class PlaceDetail {
       .open(`Hidden “${place.name}” from results`, 'Undo', { duration: 6000 })
       .onAction()
       .subscribe(() => this.prefs.unhide(place.id));
+  }
+
+  protected photoFailed(): void {
+    this.photos.markUnavailable(this.place().commonsFile);
   }
 }
