@@ -70,8 +70,8 @@ export class PreferencesService {
     );
   }
 
-  /** Adds and selects a custom chip. Returns an error message when the label is unusable. */
-  addCustom(rawLabel: string): string | null {
+  /** Adds a custom chip, optionally selecting it. Returns an error message when the label is unusable. */
+  addCustom(rawLabel: string, select = true): string | null {
     const label = rawLabel.trim().replace(/\s+/g, ' ').slice(0, MAX_CUSTOM_LABEL_LENGTH);
     if (label.length < 2) {
       return 'Enter at least 2 characters.';
@@ -79,7 +79,7 @@ export class PreferencesService {
     const keyword = label.toLowerCase();
     const existing = this.all().find((p) => p.label.toLowerCase() === keyword);
     if (existing) {
-      if (!this.selectedIds().includes(existing.id)) this.toggleSelected(existing.id);
+      if (select && !this.selectedIds().includes(existing.id)) this.toggleSelected(existing.id);
       return null;
     }
     const id = `custom:${keyword}`;
@@ -88,7 +88,7 @@ export class PreferencesService {
       // OSM cuisine values use underscores ("ice_cream"), names use spaces.
       { id, label, keywords: [...new Set([keyword, keyword.replace(/ /g, '_')])], custom: true },
     ]);
-    this.selectedIds.update((ids) => [...ids, id]);
+    if (select) this.selectedIds.update((ids) => [...ids, id]);
     return null;
   }
 
