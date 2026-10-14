@@ -39,6 +39,8 @@ export interface Place {
   address?: string;
   phone?: string;
   website?: string;
+  /** A Wikimedia Commons file explicitly linked by the OSM contributor, e.g. `File:Place.jpg`. */
+  commonsFile?: string;
   /** Link to the element on openstreetmap.org so users can inspect or fix the data. */
   sourceUrl: string;
 }

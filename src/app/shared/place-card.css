@@ -28,6 +28,25 @@
   place-items: center;
   font-size: 42px;
   position: relative;
+  overflow: hidden;
+}
+
+.foodimg img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.photo-source {
+  position: absolute;
+  right: 5px;
+  bottom: 5px;
+  padding: 3px 5px;
+  border-radius: 5px;
+  background: #000000a8;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
 }
 
 .foodimg.blue {

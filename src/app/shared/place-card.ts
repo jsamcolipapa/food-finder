@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
+import { CommonsPhotoService } from '../core/commons-photo.service';
 import { FEATURE_LABELS, Place } from '../core/models';
 import { describeHours } from '../core/opening-hours';
 import { describeKind, placeEmoji } from '../core/ranking';
@@ -17,6 +18,7 @@ const KIND_LABELS: Record<string, string> = {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PlaceCard {
+  private readonly photos = inject(CommonsPhotoService);
   readonly place = input.required<Place>();
   readonly reason = input<string>();
   readonly saved = input(false);
@@ -36,4 +38,9 @@ export class PlaceCard {
     const type = KIND_LABELS[place.kind] ?? 'Eatery';
     return place.cuisines.length ? `${describeKind(place)} · ${type}` : type;
   });
+  protected readonly photo = computed(() => this.photos.photoFor(this.place().commonsFile)());
+
+  protected photoFailed(): void {
+    this.photos.markUnavailable(this.place().commonsFile);
+  }
 }
