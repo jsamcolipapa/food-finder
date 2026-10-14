@@ -3,6 +3,13 @@ export interface LatLng {
   lng: number;
 }
 
+/** A selectable city, address, neighbourhood, or landmark returned by a geocoder. */
+export interface LocationSuggestion {
+  id: string;
+  label: string;
+  location: LatLng;
+}
+
 /** Circular search area. Kept small on purpose: public Overpass instances are shared. */
 export interface SearchArea {
   center: LatLng;
