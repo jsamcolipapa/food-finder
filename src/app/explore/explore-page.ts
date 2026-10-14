@@ -12,15 +12,18 @@ import {
 } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { ActivatedRoute } from '@angular/router';
 import { APP_CONFIG } from '../core/config';
 import { ExploreStore } from '../core/explore.store';
 import { FilterPanelService } from '../core/filter-panel.service';
 import { formatDistance } from '../core/geo';
 import { LocationService } from '../core/location.service';
 import { ThemeService } from '../core/theme.service';
-import { FEATURE_LABELS, Place, PlaceFeature, TravelMode } from '../core/models';
+import { FEATURE_LABELS, LocationSuggestion, Place, PlaceFeature, TravelMode } from '../core/models';
 import { PreferencesService } from '../core/preferences.service';
-import { DirectionsProvider } from '../core/providers';
+import { DirectionsProvider, GeocodingProvider } from '../core/providers';
+import { parseSharedSearch, serializeSharedSearch } from '../core/search-link';
 import { MapView } from '../shared/map-view';
 import { PlaceCard } from '../shared/place-card';
 import { PlaceDetail } from '../shared/place-detail';
@@ -41,11 +44,15 @@ export class ExplorePage {
   protected readonly location = inject(LocationService);
   protected readonly theme = inject(ThemeService);
   private readonly directions = inject(DirectionsProvider);
+  private readonly geocoding = inject(GeocodingProvider);
+  private readonly snackBar = inject(MatSnackBar);
+  private readonly activatedRoute = inject(ActivatedRoute);
   private readonly injector = inject(Injector);
 
   private readonly queryInput = viewChild.required<ElementRef<HTMLInputElement>>('query');
   private readonly listEl = viewChild.required<ElementRef<HTMLElement>>('list');
   private readonly mapEl = viewChild.required<ElementRef<HTMLElement>>('map');
+  private readonly locationInput = viewChild<ElementRef<HTMLInputElement>>('locationInput');
 
   protected readonly view = signal<'list' | 'map'>('list');
   protected readonly filtersOpen = this.filterPanel.open;
@@ -59,6 +66,12 @@ export class ExplorePage {
   protected readonly maxResults = APP_CONFIG.maxResults;
   protected readonly formatDistance = formatDistance;
   protected readonly featureOptions = Object.entries(FEATURE_LABELS) as [PlaceFeature, string][];
+  protected readonly locationSearchOpen = signal(false);
+  protected readonly locationQuery = signal('');
+  protected readonly locationSuggestions = signal<LocationSuggestion[]>([]);
+  protected readonly locationSearchState = signal<'idle' | 'loading' | 'empty' | 'error'>('idle');
+  protected readonly activeLocationIndex = signal(-1);
+  private pendingLocationSearch?: AbortController;
 
   /** How many cards are rendered; grows with “Show more” and resets when results change. */
   protected readonly shown = signal(APP_CONFIG.pageSize);
@@ -66,7 +79,18 @@ export class ExplorePage {
   protected readonly pageSize = APP_CONFIG.pageSize;
 
   constructor() {
-    this.store.locateOnStart();
+    const shared = parseSharedSearch(this.activatedRoute.snapshot.queryParamMap);
+    if (shared) {
+      this.prefs.radiusM.set(shared.radiusM);
+      this.prefs.selectedIds.set(shared.selectedIds);
+      this.prefs.featureFilters.set(shared.features);
+      this.prefs.openNowOnly.set(shared.openNowOnly);
+      this.store.query.set(shared.query);
+      this.store.mapCenter.set(shared.center);
+      void this.store.search(shared.center);
+    } else {
+      this.store.locateOnStart();
+    }
     effect(() => {
       this.store.results();
       this.shown.set(APP_CONFIG.pageSize);
@@ -152,6 +176,88 @@ export class ExplorePage {
     this.filterPanel.show();
   }
 
+  protected toggleLocationSearch(): void {
+    this.locationSearchOpen.update((open) => !open);
+    this.activeLocationIndex.set(-1);
+    if (this.locationSearchOpen()) {
+      afterNextRender(() => this.locationInput()?.nativeElement.focus(), { injector: this.injector });
+    }
+  }
+
+  protected closeLocationSearch(): void {
+    this.locationSearchOpen.set(false);
+    this.locationQuery.set('');
+    this.locationSuggestions.set([]);
+    this.activeLocationIndex.set(-1);
+  }
+
+  protected onLocationKeydown(event: KeyboardEvent): void {
+    const results = this.locationSuggestions();
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      this.closeLocationSearch();
+      return;
+    }
+    if (event.key === 'Enter' && this.locationQuery().trim().length >= 3 && !results.length) {
+      event.preventDefault();
+      void this.findLocations(this.locationQuery());
+      return;
+    }
+    if (!results.length) return;
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      event.preventDefault();
+      this.activeLocationIndex.update((index) => {
+        const next = event.key === 'ArrowDown' ? index + 1 : index - 1;
+        return (next + results.length) % results.length;
+      });
+    } else if (event.key === 'Enter') {
+      const choice = results[this.activeLocationIndex()];
+      if (choice) {
+        event.preventDefault();
+        this.selectLocation(choice);
+      }
+    }
+  }
+
+  protected selectLocation(suggestion: LocationSuggestion): void {
+    this.store.mapCenter.set(suggestion.location);
+    this.closeLocationSearch();
+    void this.store.search(suggestion.location);
+  }
+
+  protected submitLocationSearch(): void {
+    if (this.locationQuery().trim().length >= 3) void this.findLocations(this.locationQuery());
+  }
+
+  protected async shareSearch(): Promise<void> {
+    const area = this.store.searched();
+    if (!area) return;
+    const params = serializeSharedSearch({
+      center: area.center,
+      radiusM: area.radiusM,
+      query: this.store.query(),
+      selectedIds: this.prefs.selectedIds(),
+      openNowOnly: this.prefs.openNowOnly(),
+      features: this.prefs.featureFilters(),
+    });
+    const url = new URL(window.location.href);
+    url.search = params.toString();
+    url.hash = '';
+    const text = 'Find food nearby with Crave';
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: 'Crave search', text, url: url.toString() });
+        return;
+      }
+      await navigator.clipboard.writeText(url.toString());
+      this.snackBar.open('Search link copied', undefined, { duration: 2500 });
+    } catch (error) {
+      if ((error as DOMException).name !== 'AbortError') {
+        window.prompt('Copy this Crave search link', url.toString());
+      }
+    }
+  }
+
   protected closeFilters(): void { this.filterPanel.close(); }
 
   protected toggleStagedCuisine(id: string): void {
@@ -200,6 +306,10 @@ export class ExplorePage {
   }
 
   protected onKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Escape' && this.locationSearchOpen()) {
+      this.closeLocationSearch();
+      return;
+    }
     if (event.key === 'Escape' && this.filtersOpen()) {
       this.closeFilters();
       return;
@@ -207,6 +317,24 @@ export class ExplorePage {
     if ((event.metaKey || event.ctrlKey) && event.key === 'k') {
       event.preventDefault();
       this.queryInput().nativeElement.focus();
+    }
+  }
+
+  private async findLocations(query: string): Promise<void> {
+    this.pendingLocationSearch?.abort();
+    const controller = (this.pendingLocationSearch = new AbortController());
+    this.locationSearchState.set('loading');
+    try {
+      const suggestions = await this.geocoding.search(query, this.store.mapCenter(), controller.signal);
+      if (controller.signal.aborted) return;
+      this.locationSuggestions.set(suggestions);
+      this.activeLocationIndex.set(-1);
+      this.locationSearchState.set(suggestions.length ? 'idle' : 'empty');
+    } catch {
+      if (!controller.signal.aborted) {
+        this.locationSuggestions.set([]);
+        this.locationSearchState.set('error');
+      }
     }
   }
 }

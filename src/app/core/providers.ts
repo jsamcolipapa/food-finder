@@ -1,8 +1,17 @@
-import { LatLng, Place, Route, SearchArea, TravelMode } from './models';
+import { LatLng, LocationSuggestion, Place, Route, SearchArea, TravelMode } from './models';
 
 /** Source of nearby eateries. Swap the implementation to change data provider. */
 export abstract class RestaurantProvider {
   abstract searchNearby(area: SearchArea, signal?: AbortSignal): Promise<Place[]>;
+}
+
+/** Finds a user-entered landmark or address without coupling the UI to one vendor. */
+export abstract class GeocodingProvider {
+  abstract search(
+    query: string,
+    bias: LatLng,
+    signal?: AbortSignal,
+  ): Promise<LocationSuggestion[]>;
 }
 
 /** Owns the map style/tile configuration and the attribution that must stay visible. */

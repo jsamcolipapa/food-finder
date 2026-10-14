@@ -11,6 +11,35 @@
   margin-bottom: 18px;
 }
 
+.head-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.location-search { position: relative; }
+
+.location-popover {
+  position: absolute;
+  z-index: 7;
+  top: calc(100% + 8px);
+  right: 0;
+  width: min(390px, calc(100vw - 30px));
+  padding: 13px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  box-shadow: var(--shadow-modal);
+}
+
+.location-popover label { display: block; margin-bottom: 7px; font-size: 12px; font-weight: 750; }
+.location-popover input { width: 100%; box-sizing: border-box; border: 1px solid var(--line); border-radius: 9px; padding: 10px; background: var(--quiet); color: var(--ink); }
+.location-submit { width: 100%; margin-top: 8px; padding: 9px 11px; border-radius: 8px; background: var(--primary); color: var(--on-primary); font-size: 12px; font-weight: 750; }
+.location-status, .location-credit { margin: 8px 0 0; color: var(--muted); font-size: 11px; }
+.location-popover ul { margin: 9px 0 0; padding: 0; list-style: none; border-top: 1px solid var(--line); }
+.location-popover li { padding: 10px 4px; border-bottom: 1px solid var(--line); cursor: pointer; font-size: 13px; }
+.location-popover li.active, .location-popover li:hover { color: var(--primary-strong); background: var(--primary-soft); }
+
 .title {
   font-size: 26px;
   letter-spacing: -1.2px;
@@ -504,6 +533,8 @@
     gap: 10px;
   }
 
+  .head-actions { gap: 5px; }
+
   .title {
     font-size: 28px;
   }
@@ -512,6 +543,8 @@
     font-size: 12px;
     padding: 10px;
   }
+
+  .location-popover { position: fixed; top: 64px; right: 15px; left: 15px; width: auto; }
 
   .sub {
     font-size: 13px;

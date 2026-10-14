@@ -5,14 +5,74 @@
       <h1 class="title">What sounds good?</h1>
       <p class="sub">Places to eat around you, filtered by what you're craving.</p>
     </div>
-    <button
-      type="button"
-      class="loc"
-      [disabled]="location.state() === 'requesting'"
-      (click)="store.useMyLocation()"
-    >
-      ⌖ &nbsp; {{ locationLabel() }}
-    </button>
+    <div class="head-actions">
+      <div class="location-search">
+        <button
+          type="button"
+          class="loc"
+          [attr.aria-expanded]="locationSearchOpen()"
+          aria-controls="location-suggestions"
+          (click)="toggleLocationSearch()"
+        >
+          ⌕ &nbsp; Search area
+        </button>
+        @if (locationSearchOpen()) {
+          <form class="location-popover" (submit)="$event.preventDefault(); submitLocationSearch()">
+            <label for="location-input">Search an area or landmark</label>
+            <input
+              #locationInput
+              id="location-input"
+              type="search"
+              autocomplete="off"
+              placeholder="e.g. BGC, Makati, SM Megamall"
+              role="combobox"
+              aria-autocomplete="list"
+              aria-controls="location-suggestions"
+              [attr.aria-expanded]="locationSuggestions().length > 0"
+              [attr.aria-activedescendant]="activeLocationIndex() >= 0 ? 'location-option-' + activeLocationIndex() : null"
+              [value]="locationQuery()"
+              (input)="locationQuery.set(locationInput.value)"
+              (keydown)="onLocationKeydown($event)"
+            />
+            <button type="submit" class="location-submit" [disabled]="locationQuery().trim().length < 3 || locationSearchState() === 'loading'">Search</button>
+            <p class="location-status" aria-live="polite">
+              @switch (locationSearchState()) {
+                @case ('loading') { Finding places… }
+                @case ('empty') { No matching places found. }
+                @case ('error') { Location search is unavailable. Try moving the map instead. }
+                @default { Type at least 3 characters, then press Search. }
+              }
+            </p>
+            @if (locationSuggestions().length) {
+              <ul id="location-suggestions" role="listbox" aria-label="Location suggestions">
+                @for (suggestion of locationSuggestions(); track suggestion.id; let index = $index) {
+                  <li
+                    [id]="'location-option-' + index"
+                    role="option"
+                    [attr.aria-selected]="index === activeLocationIndex()"
+                    [class.active]="index === activeLocationIndex()"
+                    (mousedown)="$event.preventDefault(); selectLocation(suggestion)"
+                  >
+                    {{ suggestion.label }}
+                  </li>
+                }
+              </ul>
+            }
+            <p class="location-credit">
+              Search data © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap contributors</a>
+            </p>
+          </form>
+        }
+      </div>
+      <button
+        type="button"
+        class="loc"
+        [disabled]="location.state() === 'requesting'"
+        (click)="store.useMyLocation()"
+      >
+        ⌖ &nbsp; {{ locationLabel() }}
+      </button>
+    </div>
   </div>
 
   @if (location.state() === 'denied' || location.state() === 'unavailable') {
@@ -71,6 +131,14 @@
     </label>
     <button type="button" class="filterbtn" (click)="openFilters()" aria-haspopup="dialog">
       <mat-icon aria-hidden="true">tune</mat-icon><span>Filters</span>
+    </button>
+    <button
+      type="button"
+      class="filterbtn"
+      [disabled]="!store.searched()"
+      (click)="shareSearch()"
+    >
+      <mat-icon aria-hidden="true">ios_share</mat-icon><span>Share</span>
     </button>
   </div>
 

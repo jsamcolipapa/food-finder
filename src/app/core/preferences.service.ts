@@ -3,7 +3,7 @@ import { APP_CONFIG } from './config';
 import { Place, PlaceFeature, Preference } from './models';
 import { StorageService } from './storage.service';
 
-const BUILT_IN: Preference[] = [
+export const BUILT_IN_PREFERENCES: Preference[] = [
   { id: 'filipino', label: 'Filipino', keywords: ['filipino'], custom: false },
   { id: 'japanese', label: 'Japanese', keywords: ['japanese', 'sushi', 'ramen'], custom: false },
   { id: 'korean', label: 'Korean', keywords: ['korean'], custom: false },
@@ -34,7 +34,7 @@ export class PreferencesService {
   readonly theme = signal<ThemeChoice>(this.storage.read('theme', 'auto'));
   readonly featureFilters = signal<PlaceFeature[]>(this.storage.read('featureFilters', []));
 
-  readonly all = computed(() => [...BUILT_IN, ...this.custom()]);
+  readonly all = computed(() => [...BUILT_IN_PREFERENCES, ...this.custom()]);
   readonly selected = computed(() => this.all().filter((p) => this.selectedIds().includes(p.id)));
   readonly favoriteIds = computed(() => new Set(this.favorites().map((p) => p.id)));
   readonly hiddenIds = computed(() => new Set(this.hidden().map((p) => p.id)));
