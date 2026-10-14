@@ -14,6 +14,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { APP_CONFIG } from '../core/config';
 import { ExploreStore } from '../core/explore.store';
+import { FilterPanelService } from '../core/filter-panel.service';
 import { formatDistance } from '../core/geo';
 import { LocationService } from '../core/location.service';
 import { ThemeService } from '../core/theme.service';
@@ -35,6 +36,7 @@ import { PreferenceChips } from '../shared/preference-chips';
 })
 export class ExplorePage {
   protected readonly store = inject(ExploreStore);
+  private readonly filterPanel = inject(FilterPanelService);
   protected readonly prefs = inject(PreferencesService);
   protected readonly location = inject(LocationService);
   protected readonly theme = inject(ThemeService);
@@ -46,6 +48,13 @@ export class ExplorePage {
   private readonly mapEl = viewChild.required<ElementRef<HTMLElement>>('map');
 
   protected readonly view = signal<'list' | 'map'>('list');
+  protected readonly filtersOpen = this.filterPanel.open;
+  protected readonly stagedRadius = signal(this.prefs.radiusM());
+  protected readonly stagedCuisines = signal<string[]>(this.prefs.selectedIds());
+  protected readonly stagedFeatures = signal<PlaceFeature[]>(this.prefs.featureFilters());
+  protected readonly stagedOpenNow = signal(this.prefs.openNowOnly());
+  protected readonly addingCuisine = signal(false);
+  protected readonly cuisineError = signal<string | null>(null);
   protected readonly radiusOptions = APP_CONFIG.radiusOptionsM;
   protected readonly maxResults = APP_CONFIG.maxResults;
   protected readonly formatDistance = formatDistance;
@@ -61,6 +70,13 @@ export class ExplorePage {
     effect(() => {
       this.store.results();
       this.shown.set(APP_CONFIG.pageSize);
+    });
+    effect(() => {
+      if (!this.filtersOpen()) return;
+      this.stagedRadius.set(this.prefs.radiusM());
+      this.stagedCuisines.set([...this.prefs.selectedIds()]);
+      this.stagedFeatures.set([...this.prefs.featureFilters()]);
+      this.stagedOpenNow.set(this.prefs.openNowOnly());
     });
   }
 
@@ -132,7 +148,62 @@ export class ExplorePage {
     this.store.query.set('');
   }
 
+  protected openFilters(): void {
+    this.filterPanel.show();
+  }
+
+  protected closeFilters(): void { this.filterPanel.close(); }
+
+  protected toggleStagedCuisine(id: string): void {
+    this.stagedCuisines.update((ids) => ids.includes(id) ? ids.filter((item) => item !== id) : [...ids, id]);
+  }
+
+  protected addCuisine(input: HTMLInputElement): void {
+    const raw = input.value.trim().replace(/\s+/g, ' ');
+    const error = this.prefs.addCustom(raw, false);
+    this.cuisineError.set(error);
+    if (error) return;
+
+    const preference = this.prefs.all().find((item) => item.label.toLowerCase() === raw.toLowerCase());
+    if (preference && !this.stagedCuisines().includes(preference.id)) {
+      this.stagedCuisines.update((items) => [...items, preference.id]);
+    }
+    input.value = '';
+    this.addingCuisine.set(false);
+    this.cuisineError.set(null);
+  }
+
+  protected cancelCuisine(): void {
+    this.addingCuisine.set(false);
+    this.cuisineError.set(null);
+  }
+
+  protected toggleStagedFeature(feature: PlaceFeature): void {
+    this.stagedFeatures.update((items) => items.includes(feature) ? items.filter((item) => item !== feature) : [...items, feature]);
+  }
+
+  protected resetFilters(): void {
+    this.stagedRadius.set(APP_CONFIG.defaultRadiusM);
+    this.stagedCuisines.set([]);
+    this.stagedFeatures.set([]);
+    this.stagedOpenNow.set(false);
+  }
+
+  protected applyFilters(): void {
+    const radiusChanged = this.prefs.radiusM() !== this.stagedRadius();
+    this.prefs.radiusM.set(this.stagedRadius());
+    this.prefs.selectedIds.set(this.stagedCuisines());
+    this.prefs.featureFilters.set(this.stagedFeatures());
+    this.prefs.openNowOnly.set(this.stagedOpenNow());
+    this.filterPanel.close();
+    if (radiusChanged && this.store.searched()) this.store.search(this.store.searched()!.center);
+  }
+
   protected onKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Escape' && this.filtersOpen()) {
+      this.closeFilters();
+      return;
+    }
     if ((event.metaKey || event.ctrlKey) && event.key === 'k') {
       event.preventDefault();
       this.queryInput().nativeElement.focus();

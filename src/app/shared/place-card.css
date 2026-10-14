@@ -5,11 +5,11 @@
 .card {
   background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: 18px;
-  padding: 12px;
+  border-radius: 14px;
+  padding: 9px;
   display: grid;
-  grid-template-columns: 128px 1fr;
-  gap: 15px;
+  grid-template-columns: 104px 1fr;
+  gap: 12px;
   box-shadow: var(--shadow-card);
   transition: 0.18s;
   cursor: pointer;
@@ -21,12 +21,12 @@
 }
 
 .foodimg {
-  height: 126px;
-  border-radius: 13px;
+  height: 104px;
+  border-radius: 10px;
   background: var(--tile-a);
   display: grid;
   place-items: center;
-  font-size: 50px;
+  font-size: 42px;
   position: relative;
 }
 
@@ -63,8 +63,8 @@
 }
 
 h3 {
-  margin: 3px 0 4px;
-  font-size: 17px;
+  margin: 1px 0 3px;
+  font-size: 15px;
   letter-spacing: -0.25px;
 }
 
@@ -92,8 +92,8 @@ h3 {
   flex: none;
   background: var(--quiet);
   border-radius: 50%;
-  width: 34px;
-  height: 34px;
+  width: 30px;
+  height: 30px;
   color: var(--muted);
   font-size: 17px;
 }
@@ -107,7 +107,7 @@ h3 {
   flex-wrap: wrap;
   gap: 4px 6px;
   align-items: center;
-  margin: 9px 0;
+  margin: 6px 0;
   color: var(--muted);
   font-size: 12px;
 }
@@ -150,8 +150,8 @@ h3 {
   background: var(--primary-soft);
   color: var(--on-primary-soft);
   border-radius: 7px;
-  font-size: 11px;
-  padding: 5px 8px;
+  font-size: 10px;
+  padding: 4px 7px;
   font-weight: 700;
 }
 

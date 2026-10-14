@@ -17,23 +17,23 @@ export interface MapColors {
 }
 
 const LIGHT: MapColors = {
-  pin: '#d03e1a',
-  pinSaved: '#2a211c',
+  pin: '#f43b5b',
+  pinSaved: '#19232d',
   onPin: '#ffffff',
   onPinSaved: '#ffffff',
-  label: '#b93414',
+  label: '#d92a49',
   route: '#2f6fdb',
   halo: '#ffffff',
 };
 
 const DARK: MapColors = {
-  pin: '#d03e1a',
-  pinSaved: '#f6ece4',
+  pin: '#fa3d5e',
+  pinSaved: '#f5f8fa',
   onPin: '#ffffff',
   onPinSaved: '#2a211c',
-  label: '#ffb59e',
+  label: '#ff9aaa',
   route: '#6ea0f5',
-  halo: '#1c1512',
+  halo: '#101820',
 };
 
 export function mapColors(dark: boolean): MapColors {
@@ -41,4 +41,4 @@ export function mapColors(dark: boolean): MapColors {
 }
 
 /** --paper in each theme, for the browser chrome. */
-export const PAGE_COLORS = { light: '#fff8ef', dark: '#1c1512' };
+export const PAGE_COLORS = { light: '#f4f6f8', dark: '#101820' };

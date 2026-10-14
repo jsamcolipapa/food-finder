@@ -1,18 +1,18 @@
 .main {
-  max-width: 1240px;
-  margin: 34px auto;
-  padding: 0 28px;
+  max-width: 1500px;
+  margin: 0 auto;
+  padding: 24px 28px 30px;
 }
 
 .headrow {
   display: flex;
   justify-content: space-between;
   align-items: end;
-  margin-bottom: 23px;
+  margin-bottom: 18px;
 }
 
 .title {
-  font-size: 34px;
+  font-size: 26px;
   letter-spacing: -1.2px;
   margin: 4px 0;
 }
@@ -21,6 +21,8 @@
   color: var(--muted);
   margin: 0;
 }
+
+.discover-tools { display: flex; gap: 10px; align-items: stretch; margin-bottom: 12px; }
 
 .loc {
   flex: none;
@@ -69,13 +71,14 @@
 .searchbox {
   background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: 17px;
-  padding: 15px 18px;
+  border-radius: 12px;
+  padding: 11px 14px;
   display: flex;
   align-items: center;
   gap: 13px;
   box-shadow: var(--shadow);
-  margin-bottom: 20px;
+  margin-bottom: 0;
+  flex: 1;
 }
 
 .searchbox:focus-within {
@@ -92,8 +95,11 @@
 }
 
 .searchicon {
-  font-size: 20px;
+  font-size: 18px;
 }
+
+.filterbtn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; flex: none; padding: 0 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); color: var(--ink); font-weight: 750; box-shadow: var(--shadow-card); }
+.filterbtn mat-icon { width: 19px; height: 19px; font-size: 19px; }
 
 .kbd {
   color: var(--muted);
@@ -119,7 +125,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin: 28px 0 10px;
+  margin: 20px 0 10px;
 }
 
 .toolbar h2 {
@@ -200,8 +206,8 @@
 
 .content {
   display: grid;
-  grid-template-columns: minmax(0, 1.15fr) minmax(360px, 0.85fr);
-  gap: 22px;
+  grid-template-columns: minmax(320px, 0.82fr) minmax(400px, 1.18fr);
+  gap: 18px;
 }
 
 .list {
@@ -261,10 +267,12 @@
 
 .map {
   position: relative;
-  height: calc(100vh - 118px);
-  min-height: 510px;
-  max-height: 760px;
-  border-radius: 20px;
+  /* The column sticks below the viewport top, so reserve room for the app's
+     bottom gutter instead of sizing it to the whole viewport. */
+  height: calc(100vh - 126px);
+  min-height: min(530px, calc(100vh - 126px));
+  max-height: none;
+  border-radius: 14px;
   overflow: hidden;
   border: 1px solid var(--line);
   background: var(--map-bg);
@@ -391,6 +399,35 @@
   pointer-events: none;
 }
 
+.filter-backdrop { position: fixed; z-index: 10; inset: 0; display: flex; justify-content: flex-end; background: var(--backdrop); }
+.filter-panel { width: min(400px, 100%); height: 100%; overflow: auto; padding: 24px; background: var(--surface); box-shadow: var(--shadow-modal); }
+.panel-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 25px; }
+.panel-head h2 { margin: 0; font-size: 22px; }
+.panel-head .close { width: 34px; height: 34px; border-radius: 50%; background: var(--quiet); color: var(--ink); font-size: 20px; }
+.field-label { display: flex; justify-content: space-between; margin: 22px 0 10px; color: var(--ink); font-size: 13px; font-weight: 750; }
+.field-label strong { color: var(--primary); }
+.range { width: 100%; accent-color: var(--primary); }
+.range-values { display: flex; justify-content: space-between; color: var(--muted); font-size: 11px; }
+.panel-chips { display: flex; flex-wrap: wrap; gap: 7px; }
+.panel-chips .pill { padding: 7px 11px; font-size: 12px; }
+.add-cuisine { padding: 7px 11px; border: 1px dashed var(--muted); border-radius: 100px; background: transparent; color: var(--muted); font-size: 12px; font-weight: 700; }
+.add-cuisine:hover { border-color: var(--primary); color: var(--primary); }
+.add-cuisine-form { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px; }
+.add-cuisine-form input { flex: 1 1 150px; min-width: 0; border: 1px solid var(--line); border-radius: 9px; padding: 8px 10px; background: var(--quiet); color: var(--ink); }
+.add-cuisine-form button { padding: 8px 10px; border-radius: 9px; background: var(--primary); color: var(--on-primary); font-weight: 700; }
+.add-cuisine-form .cancel { background: var(--quiet); color: var(--muted); }
+.add-cuisine-form .error { flex-basis: 100%; color: var(--primary-strong); font-size: 11px; }
+.switch-row { display: flex; align-items: center; justify-content: space-between; margin-top: 26px; }
+.switch-row span { display: grid; gap: 2px; font-size: 13px; }
+.switch-row small { color: var(--muted); }
+.switch-row input { position: absolute; opacity: 0; }
+.switch-row i { position: relative; width: 44px; height: 25px; border-radius: 20px; background: var(--line); transition: .18s; }
+.switch-row i::after { content: ''; position: absolute; top: 3px; left: 3px; width: 19px; height: 19px; border-radius: 50%; background: white; transition: .18s; }
+.switch-row input:checked + i { background: var(--primary); }
+.switch-row input:checked + i::after { transform: translateX(19px); }
+.panel-actions { display: flex; gap: 9px; margin-top: 32px; }
+.panel-actions .btn { flex: 1; }
+
 .mapfoot > * {
   pointer-events: auto;
 }
@@ -451,14 +488,15 @@
   }
 
   .main {
-    margin-top: 25px;
+    margin-top: 0;
   }
 }
 
 @media (max-width: 600px) {
   .main {
     padding: 0 15px;
-    margin: 22px auto 0;
+    margin: 0 auto;
+    padding-top: 18px;
   }
 
   .headrow {
@@ -482,6 +520,13 @@
   .searchbox {
     padding: 13px 14px;
   }
+
+  .headrow { margin-bottom: 14px; }
+  .headrow .eyebrow, .sub { display: none; }
+  .filterbtn span { display: none; }
+  .filterbtn { width: 45px; padding: 0; }
+  .quickfilters { display: none; }
+  .filter-panel { width: 100%; height: auto; max-height: 90vh; margin-top: auto; border-radius: 22px 22px 0 0; }
 
   .kbd {
     display: none;

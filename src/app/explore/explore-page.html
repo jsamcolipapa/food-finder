@@ -56,23 +56,24 @@
     </div>
   }
 
-  <label class="searchbox">
-    <span class="searchicon" aria-hidden="true">⌕</span>
-    <input
-      #query
-      type="search"
-      placeholder="Search places or cuisines nearby"
-      aria-label="Search places or cuisines nearby"
-      [value]="store.query()"
-      (input)="store.query.set(query.value)"
-    />
-    <span class="kbd" aria-hidden="true">⌘ K</span>
-  </label>
-
-  <div class="filterhead">
-    <strong>Choose your craving</strong>
-    <small>Pick one or more</small>
+  <div class="discover-tools">
+    <label class="searchbox">
+      <span class="searchicon" aria-hidden="true">⌕</span>
+      <input
+        #query
+        type="search"
+        placeholder="Search restaurants, cuisine…"
+        aria-label="Search places or cuisines nearby"
+        [value]="store.query()"
+        (input)="store.query.set(query.value)"
+      />
+      <span class="kbd" aria-hidden="true">⌘ K</span>
+    </label>
+    <button type="button" class="filterbtn" (click)="openFilters()" aria-haspopup="dialog">
+      <mat-icon aria-hidden="true">tune</mat-icon><span>Filters</span>
+    </button>
   </div>
+
   <app-preference-chips />
 
   <div class="toolbar">
@@ -115,7 +116,7 @@
     </div>
   </div>
 
-  <div class="quickfilters" role="group" aria-label="More filters">
+  <div class="quickfilters" role="group" aria-label="Quick filters">
     <button
       type="button"
       class="pill"
@@ -385,4 +386,46 @@
     (directionsRequested)="route(selected.place)"
     (closed)="store.selectedId.set(null)"
   />
+}
+
+@if (filtersOpen()) {
+  <div class="filter-backdrop" (click)="closeFilters()">
+    <section class="filter-panel" role="dialog" aria-modal="true" aria-labelledby="filter-title" (click)="$event.stopPropagation()">
+      <div class="panel-head">
+        <h2 id="filter-title">Filters</h2>
+        <button type="button" class="close" aria-label="Close filters" (click)="closeFilters()">×</button>
+      </div>
+      <label class="field-label">Distance <strong>{{ formatDistance(stagedRadius()) }}</strong></label>
+      <input class="range" type="range" [min]="radiusOptions[0]" [max]="radiusOptions[radiusOptions.length - 1]" [step]="1000" [value]="stagedRadius()" (input)="stagedRadius.set(+range.value)" #range />
+      <div class="range-values"><span>{{ formatDistance(radiusOptions[0]) }}</span><span>{{ formatDistance(radiusOptions[radiusOptions.length - 1]) }}</span></div>
+
+      <span class="field-label">Cuisine</span>
+      <div class="panel-chips">
+        @for (pref of prefs.all(); track pref.id) {
+          <button type="button" class="pill" [class.active]="stagedCuisines().includes(pref.id)" (click)="toggleStagedCuisine(pref.id)">{{ pref.label }}</button>
+        }
+        @if (!addingCuisine()) {
+          <button type="button" class="add-cuisine" (click)="addingCuisine.set(true)">＋ Add preference</button>
+        }
+      </div>
+      @if (addingCuisine()) {
+        <form class="add-cuisine-form" (submit)="$event.preventDefault(); addCuisine(cuisine)">
+          <input #cuisine autofocus autocomplete="off" placeholder="e.g. Thai, ramen" aria-label="New cuisine preference" [attr.aria-invalid]="!!cuisineError()" (keydown.escape)="cancelCuisine()" />
+          <button type="submit">Add</button>
+          <button type="button" class="cancel" (click)="cancelCuisine()">Cancel</button>
+          @if (cuisineError(); as error) { <small class="error" role="alert">{{ error }}</small> }
+        </form>
+      }
+
+      <span class="field-label">Good for</span>
+      <div class="panel-chips">
+        @for (option of featureOptions; track option[0]) {
+          <button type="button" class="pill" [class.active]="stagedFeatures().includes(option[0])" (click)="toggleStagedFeature(option[0])">{{ option[1] }}</button>
+        }
+      </div>
+
+      <label class="switch-row"><span><strong>Open now</strong><small>Hide places mapped as closed</small></span><input type="checkbox" [checked]="stagedOpenNow()" (change)="stagedOpenNow.set(openNow.checked)" #openNow /><i></i></label>
+      <div class="panel-actions"><button type="button" class="btn quiet" (click)="resetFilters()">Reset</button><button type="button" class="btn" (click)="applyFilters()">Apply filters</button></div>
+    </section>
+  </div>
 }
